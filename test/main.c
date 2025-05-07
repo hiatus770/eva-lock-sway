@@ -242,6 +242,7 @@ int main(int argc, char *argv[])
 
     xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, &state);
     state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
+    
 
     xdg_toplevel_set_title(state.xdg_toplevel, "CLIENT!");
     wl_surface_commit(state.wl_surface);
@@ -249,7 +250,7 @@ int main(int argc, char *argv[])
     struct wl_callback *cb = wl_surface_frame(state.wl_surface);
     wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
 
-    create_window(&state, 1920, 1080);
+    // create_window(&state, 1920, 1080);
 
     if (!eglMakeCurrent(state.egl_display, state.egl_surface, state.egl_surface, state.egl_context)) {
         fprintf(stderr, "Failed to make EGL context current: %d\n", eglGetError());
