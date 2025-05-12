@@ -1,0 +1,24 @@
+{
+    "github.copilot.enable": {
+        "*": false,
+        "plaintext": true,
+        "markdown": true,
+        "scminput": false,
+        "yaml": false,
+        "jsonc": false,
+        "c": false,
+        "python": false,
+        "cpp": true,
+        "java": false,
+        "makefile": true,
+        "pde": true,
+        "javascript": true,
+        "latex": false,
+        "lean4": false
+    },
+    "files.associations": {
+        "**/.i3/config": "i3",
+        "**/i3/config": "i3",
+        "xdg-shell-client-protocol.h": "c"
+    }
+}

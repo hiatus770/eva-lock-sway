@@ -15,8 +15,7 @@
                 "-lrt",
                 "-lwayland-egl", 
                 "-lEGL", 
-                "-lGLESv2",
-                "shader.c", 
+                "-lGLESv2" 
             ],
             "options": {
                 "cwd": "${fileDirname}"

@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
+#include <math.h>
 
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
@@ -16,7 +17,11 @@
 #include <GL/gl.h>
 #include "xdg-shell-client-protocol.h"
 
+#include "globals.h"
+#include "shader.h"
 #include "memory.h"
+
+#include <assert.h>
 
 /* Wayland Code */
 struct client_state
@@ -31,7 +36,6 @@ struct client_state
     struct wl_surface *wl_surface;
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *xdg_toplevel;
-
 
     // State
     float offset;
@@ -131,6 +135,9 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 
 static const struct wl_callback_listener wl_surface_frame_listener;
 
+/**
+* This is the important function called when they want us to render a frame again!
+*/
 static void wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time){
     // Destroy this callback
     wl_callback_destroy(cb);
@@ -151,9 +158,9 @@ static void wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t t
     wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
     wl_surface_commit(state->wl_surface);
 
-    // glClearColor(0.0, 1.0, 0.0, 1.0);
-    // glClear(GL_COLOR_BUFFER_BIT);
-    // eglSwapBuffers(state->egl_display, state->egl_surface);
+    glClearColor(0.0, 1.0, 0.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT);
+    eglSwapBuffers(state->egl_display, state->egl_surface);
 
     state->last_frame = time;
 }
@@ -203,14 +210,23 @@ static const struct wl_registry_listener
 
 
 // Window and opengl stuff
-
 static void create_window(struct client_state *state, int32_t width, int32_t height){
-    eglBindAPI(EGL_OPENGL_API);
     EGLint attributes[] = {
         EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE
     };
     EGLConfig config;
-    EGLint num_config;
+    EGLint num_config, major, minor;
+    EGLBoolean ret;
+
+    state->egl_display = eglGetDisplay(state->wl_display);
+
+    ret = eglInitialize(state->egl_display, &major, &minor);
+    assert(ret == EGL_TRUE);
+    ret = eglBindAPI(EGL_OPENGL_API);
+    assert(ret == EGL_TRUE);
+
+    ifd
+        fprintf(stderr, "VERSIONS: %d %d\n", major, minor);
 
     eglChooseConfig(state->egl_display, attributes, &config, 1, &num_config);
     state->egl_context = eglCreateContext(state->egl_display, config, EGL_NO_CONTEXT, NULL);
@@ -218,6 +234,12 @@ static void create_window(struct client_state *state, int32_t width, int32_t hei
     state->egl_window = wl_egl_window_create(state->wl_surface, width, height);
     state->egl_surface = eglCreateWindowSurface(state->egl_display, config, state->egl_window, NULL);
     eglMakeCurrent(state->egl_display, state->egl_surface, state->egl_surface, state->egl_context);
+    fprintf(stderr, "Tried to make current");
+}
+
+// Initialization of opengl program
+void init_gl(struct client_state *state){
+
 }
 
 
@@ -242,15 +264,21 @@ int main(int argc, char *argv[])
 
     xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, &state);
     state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
-    
 
+    // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
+    create_window(&state, 1920, 1080);
+
+    struct shader test = {};
+    init_shader(&test, "/shaders/vertex.vs", "/shaders/fragment.fs");
+
+
+    // XDG Shell making the actual window
     xdg_toplevel_set_title(state.xdg_toplevel, "CLIENT!");
     wl_surface_commit(state.wl_surface);
 
     struct wl_callback *cb = wl_surface_frame(state.wl_surface);
     wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
 
-    // create_window(&state, 1920, 1080);
 
     if (!eglMakeCurrent(state.egl_display, state.egl_surface, state.egl_surface, state.egl_context)) {
         fprintf(stderr, "Failed to make EGL context current: %d\n", eglGetError());
