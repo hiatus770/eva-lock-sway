@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <math.h>
 
+#include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
 #include <wayland-egl-core.h>
@@ -115,8 +116,10 @@ static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, u
 
     xdg_surface_ack_configure(xdg_surface, serial);
 
-    struct wl_buffer *buffer = draw_frame(state);
-    wl_surface_attach(state->wl_surface, buffer, 0, 0);
+    glViewport(0, 0, state->width, state->height);
+    glClearColor(0.0, 1.0, 0.0, 1.0); // Example: green background
+    glClear(GL_COLOR_BUFFER_BIT);
+    eglSwapBuffers(state->egl_display, state->egl_surface);
     wl_surface_commit(state->wl_surface);
 }
 
@@ -133,6 +136,7 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel
     }
     if (state->egl_window){
         wl_egl_window_resize(state->egl_window, width, height, 0, 0);
+        wl_surface_commit(state->wl_surface);
     }
     state->width = width;
     state->height = height;
@@ -141,6 +145,9 @@ static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel
 static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel){
     struct client_state *state = data;
     state->closed = true;
+    ifd {
+        fprintf(stderr, "WANTING TO CLOSE!");
+    }
 }
 
 static const struct xdg_toplevel_listener xdg_toplevel_listener = {
@@ -321,7 +328,9 @@ int main(int argc, char *argv[])
 
     while (wl_display_dispatch(state.wl_display) != -1)
     {
-        /* This space deliberately left blank */
+        if (state.closed){
+            break;
+        }
     }
 
     wl_display_disconnect(state.wl_display);
