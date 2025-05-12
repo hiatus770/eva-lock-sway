@@ -37,6 +37,9 @@ struct client_state
     struct xdg_surface *xdg_surface;
     struct xdg_toplevel *xdg_toplevel;
 
+    int width, height;
+    bool closed;
+
     // State
     float offset;
     uint32_t last_frame;
@@ -109,7 +112,9 @@ static struct wl_buffer *draw_frame(struct client_state *state)
 static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial)
 {
     struct client_state *state = data;
+
     xdg_surface_ack_configure(xdg_surface, serial);
+
     struct wl_buffer *buffer = draw_frame(state);
     wl_surface_attach(state->wl_surface, buffer, 0, 0);
     wl_surface_commit(state->wl_surface);
@@ -117,6 +122,30 @@ static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, u
 
 static const struct xdg_surface_listener xdg_surface_listener = {
     .configure = xdg_surface_configure,
+};
+
+
+// toplevel listener
+static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states){
+    struct client_state *state = data;
+    if (width == 0 || height == 0){
+        return;
+    }
+    if (state->egl_window){
+        wl_egl_window_resize(state->egl_window, width, height, 0, 0);
+    }
+    state->width = width;
+    state->height = height;
+}
+
+static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel){
+    struct client_state *state = data;
+    state->closed = true;
+}
+
+static const struct xdg_toplevel_listener xdg_toplevel_listener = {
+    .configure = xdg_toplevel_configure,
+    .close = xdg_toplevel_close
 };
 
 // xdg wm base
@@ -153,12 +182,12 @@ static void wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t t
         state->offset += elapsed / 1000.0 * 24;
     }
 
-    struct wl_buffer *buffer = draw_frame(state);
-    wl_surface_attach(state->wl_surface, buffer, 0, 0);
-    wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
-    wl_surface_commit(state->wl_surface);
+    // struct wl_buffer *buffer = draw_frame(state);
+    // wl_surface_attach(state->wl_surface, buffer, 0, 0);
+    // wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
+    // wl_surface_commit(state->wl_surface);
 
-    glClearColor(0.0, 1.0, 0.0, 1.0);
+    glClearColor(0.0, 1.0, 0.0, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
     eglSwapBuffers(state->egl_display, state->egl_surface);
 
@@ -234,7 +263,9 @@ static void create_window(struct client_state *state, int32_t width, int32_t hei
     state->egl_window = wl_egl_window_create(state->wl_surface, width, height);
     state->egl_surface = eglCreateWindowSurface(state->egl_display, config, state->egl_window, NULL);
     eglMakeCurrent(state->egl_display, state->egl_surface, state->egl_surface, state->egl_context);
-    fprintf(stderr, "Tried to make current");
+
+    ifd
+        fprintf(stderr, "Tried to make current");
 }
 
 // Initialization of opengl program
@@ -246,6 +277,8 @@ void init_gl(struct client_state *state){
 int main(int argc, char *argv[])
 {
     struct client_state state = {0};
+    state.width = 1920;
+    state.height = 1080;
     state.wl_display = wl_display_connect(NULL);
     state.wl_registry = wl_display_get_registry(state.wl_display);
 
@@ -263,14 +296,16 @@ int main(int argc, char *argv[])
     state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface); // Pass our surface to make a xdg surface
 
     xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, &state);
+
     state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
 
+    xdg_toplevel_add_listener(state.xdg_toplevel, &xdg_toplevel_listener, &state);
+
     // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
-    create_window(&state, 1920, 1080);
+    create_window(&state, state.width, state.height);
 
     struct shader test = {};
     init_shader(&test, "/shaders/vertex.vs", "/shaders/fragment.fs");
-
 
     // XDG Shell making the actual window
     xdg_toplevel_set_title(state.xdg_toplevel, "CLIENT!");

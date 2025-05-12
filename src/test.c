@@ -20,26 +20,26 @@
 
 
 int main(){
-    printf("Running Test Suite!");
+    printf("Running Test Suite!\n\n");
 
     // TESTING FUNCTIONALITY OF THE SHADER CLASS INITIALIZATION
     // struct shader test = {};
     // init_shader(&test, "/shaders/vertex.vs", "/shaders/fragment.fs");
 
     // TESTING FUNCTIONALITY OF GETTING THE SOURCE OF THE FILE
-    // struct shader testShader = {};
-    // const char* file_path = "/home/hiatus/Documents/waylandplaying/test/test.c";
-    // printf("%s", get_source(file_path));
+    struct shader testShader = {};
+    const char* file_path = "/home/hiatus/Documents/waylandplaying/src/test.c";
+    printf("%s", get_source(file_path));
 
 
     // TESTING FUNCTIONALIRY OF FILE_NAME_EXTENSION
-    // char* file_path = "test.c";
-    // fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
-    // file_path = "test.";
-    // fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
+    file_path = "test.c";
+    fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
+    file_path = "test.";
+    fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
 
-    // file_path = "test.fs";
-    // fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
-    // file_path = "test.vs";
-    // fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
+    file_path = "test.fs";
+    fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
+    file_path = "test.vs";
+    fprintf(stderr, "PRINTING STRING: %s\n", get_file_name_extension(file_path));
 }
