@@ -9,13 +9,18 @@
 #include <unistd.h>
 #include <math.h>
 
+
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
+
 #include <EGL/egl.h>
-#include <GL/gl.h>
+// #include <GL/gl.h>
+// #include <glad/glad.h>
+#include "../include/glad/glad.h"
+
 #include "xdg-shell-client-protocol.h"
 
 #include "globals.h"
@@ -23,6 +28,10 @@
 #include "memory.h"
 
 #include <assert.h>
+
+
+struct shader globalShader;
+unsigned int VAO, VBO;
 
 /* Wayland Code */
 struct client_state
@@ -116,7 +125,9 @@ static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, u
 
     xdg_surface_ack_configure(xdg_surface, serial);
 
-    glViewport(0, 0, state->width, state->height);
+    if (state->height != 0 && state->width != 0){
+        glViewport(0, 0, state->width, state->height);
+    }
     glClearColor(0.0, 1.0, 0.0, 1.0); // Example: green background
     glClear(GL_COLOR_BUFFER_BIT);
     eglSwapBuffers(state->egl_display, state->egl_surface);
@@ -194,8 +205,14 @@ static void wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t t
     // wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
     // wl_surface_commit(state->wl_surface);
 
-    glClearColor(0.0, 1.0, 0.0, 0.5);
+    glViewport(0, 0, state->width, state->height);
+    glClearColor(0.0, 0.4, 0.0, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    globalShader.use(&globalShader);
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     eglSwapBuffers(state->egl_display, state->egl_surface);
 
     state->last_frame = time;
@@ -245,7 +262,7 @@ static const struct wl_registry_listener
 };
 
 
-// Window and opengl stuff
+// Window creation and opengl
 static void create_window(struct client_state *state, int32_t width, int32_t height){
     EGLint attributes[] = {
         EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE
@@ -273,11 +290,6 @@ static void create_window(struct client_state *state, int32_t width, int32_t hei
 
     ifd
         fprintf(stderr, "Tried to make current");
-}
-
-// Initialization of opengl program
-void init_gl(struct client_state *state){
-
 }
 
 
@@ -311,8 +323,32 @@ int main(int argc, char *argv[])
     // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
     create_window(&state, state.width, state.height);
 
-    struct shader test = {};
-    init_shader(&test, "/shaders/vertex.vs", "/shaders/fragment.fs");
+
+    // Initialize GLAD after EGL context is current
+    if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
+        fprintf(stderr, "Failed to initialize GLAD\n");
+        return 1;
+    }
+
+    glGenVertexArrays(1, &VAO);
+    glBindVertexArray(VAO);
+
+    float vertices[] = {
+        -0.5f, -0.5f, 0.0f,
+         0.5f, -0.5f, 0.0f,
+         0.0f,  0.5f, 0.0f
+    };
+
+    glGenBuffers(1, &VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+
+    init_shader(&globalShader, "/shaders/vertex.vs", "/shaders/fragment.fs");
+
 
     // XDG Shell making the actual window
     xdg_toplevel_set_title(state.xdg_toplevel, "CLIENT!");
@@ -333,6 +369,13 @@ int main(int argc, char *argv[])
         }
     }
 
+    eglDestroySurface(state.egl_display, state.egl_surface);
+    eglDestroyContext(state.egl_display, state.egl_context);
+    wl_egl_window_destroy(state.egl_window);
+    xdg_toplevel_destroy(state.xdg_toplevel);
+    xdg_surface_destroy(state.xdg_surface);
+    wl_surface_destroy(state.wl_surface);
     wl_display_disconnect(state.wl_display);
+
     return 0;
 }
