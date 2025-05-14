@@ -22,143 +22,15 @@
 #include "memory.h"
 #include <assert.h>
 
-// TODO
-// Handle this better please 
-// Maybe make a struct that represents a renderable object since we are going to have several of these shaders and such
-struct shader globalShader;
-unsigned int VAO, VBO;
-
 /* Wayland Code */
 #include "../include/client_state.h" // Main client state used for the program
 #include "../include/wayland/wl_buffer.h" // Buffer listener 
 #include "../include/wayland/xdg_surface.h" // Xdg surface listener struct used in the program 
 #include "../include/wayland/xdg_toplevel.h" // Top level application stuff handles closing and resizing 
 #include "../include/wayland/wm_base.h" // Base wm
-
-
-// DEPRECATED since we are now using opengl to draw each frame instead of just raw writing to the buffer itself 
-static struct wl_buffer *draw_frame(struct client_state *state)
-{
-    // Drawing code
-    const int width = 640, height = 480;
-    int stride = width * 4;
-    int size = stride * height;
-
-    int fd = allocate_shm_file(size);
-    if (fd == -1)
-    {
-        return NULL;
-    }
-
-    uint32_t *data = mmap(NULL, size,
-                          PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (data == MAP_FAILED)
-    {
-        close(fd);
-        return NULL;
-    }
-
-    struct wl_shm_pool *pool = wl_shm_create_pool(state->wl_shm, fd, size);
-    struct wl_buffer *buffer = wl_shm_pool_create_buffer(pool, 0,
-                                                         width, height, stride, WL_SHM_FORMAT_XRGB8888);
-    wl_shm_pool_destroy(pool);
-    close(fd);
-
-    /* Draw checkerboxed background */
-    int offset = (int)state->offset % 8;
-    for (int y = 0; y < height; ++y)
-    {
-        for (int x = 0; x < width; ++x)
-        {
-            if (((x + offset) + (y + offset) / 8 * 8) % 16 < 8)
-                data[y * width + x] = 0xFF666666;
-            else
-                data[y * width + x] = 0xFFEEEEEE;
-        }
-    }
-
-    munmap(data, size);
-    wl_buffer_add_listener(buffer, &wl_buffer_listener, NULL);
-    return buffer;
-}
-
-// Frame call back stuff
-static const struct wl_callback_listener wl_surface_frame_listener;
-
-/**
-* This is the important function called when they want us to render a frame again!
-*/
-static void wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t time){
-    // Destroy this callback
-    wl_callback_destroy(cb);
-
-    // Request another frame
-    struct client_state *state = data;
-    cb = wl_surface_frame(state->wl_surface);
-    wl_callback_add_listener(cb, &wl_surface_frame_listener, state);
-
-    // update scroll amount at 24 pix / second
-    if (state->last_frame != 0){
-        int elapsed = time - state->last_frame;
-        state->offset += elapsed / 1000.0 * 24;
-    }
-
-    glViewport(0, 0, state->width, state->height);
-    glClearColor(0.0, 0.4, 0.0, 0.5);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    globalShader.use(&globalShader);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
-    eglSwapBuffers(state->egl_display, state->egl_surface);
-
-    state->last_frame = time;
-}
-
-static const struct wl_callback_listener wl_surface_frame_listener = {
-    .done = wl_surface_frame_done,
-};
-
-// Registry object handling
-
-static void
-registry_handle_global(void *data, struct wl_registry *registry, uint32_t name, const char *interface, uint32_t version)
-{
-    struct client_state *state = data;
-    printf("interface: '%s', version: %d, name: %d\n",
-           interface, version, name);
-
-    if (strcmp(interface, wl_shm_interface.name) == 0)
-    {
-        state->wl_shm = wl_registry_bind(registry, name, &wl_shm_interface, 2);
-    }
-
-    if (strcmp(interface, wl_compositor_interface.name) == 0)
-    {
-        state->compositor = wl_registry_bind(registry, name, &wl_compositor_interface, 6);
-    }
-
-    if (strcmp(interface, xdg_wm_base_interface.name) == 0)
-    {
-        state->xdg_wm_base = wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
-        xdg_wm_base_add_listener(state->xdg_wm_base, &xdg_wm_base_listener, state);
-    }
-}
-
-static void
-registry_handle_global_remove(void *data, struct wl_registry *registry, uint32_t name)
-{
-
-    // This space deliberately left blank
-}
-
-static const struct wl_registry_listener
-    registry_listener = {
-        .global = registry_handle_global,
-        .global_remove = registry_handle_global_remove,
-};
-
+#include "../include/wayland/wl_callback_listener.h"
+#include "../include/wayland/registry_handler.h"
+#include "../include/graphics.h"
 
 // Window creation and opengl
 static void create_window(struct client_state *state, int32_t width, int32_t height){
