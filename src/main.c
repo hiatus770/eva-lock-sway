@@ -24,43 +24,13 @@
 
 /* Wayland Code */
 #include "../include/client_state.h" // Main client state used for the program
-#include "../include/wayland/wl_buffer.h" // Buffer listener 
-#include "../include/wayland/xdg_surface.h" // Xdg surface listener struct used in the program 
-#include "../include/wayland/xdg_toplevel.h" // Top level application stuff handles closing and resizing 
+#include "../include/wayland/wl_buffer.h" // Buffer listener
+#include "../include/wayland/xdg_surface.h" // Xdg surface listener struct used in the program
+#include "../include/wayland/xdg_toplevel.h" // Top level application stuff handles closing and resizing
 #include "../include/wayland/wm_base.h" // Base wm
 #include "../include/wayland/wl_callback_listener.h"
 #include "../include/wayland/registry_handler.h"
 #include "../include/graphics.h"
-
-// Window creation and opengl
-static void create_window(struct client_state *state, int32_t width, int32_t height){
-    EGLint attributes[] = {
-        EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE
-    };
-    EGLConfig config;
-    EGLint num_config, major, minor;
-    EGLBoolean ret;
-
-    state->egl_display = eglGetDisplay(state->wl_display);
-
-    ret = eglInitialize(state->egl_display, &major, &minor);
-    assert(ret == EGL_TRUE);
-    ret = eglBindAPI(EGL_OPENGL_API);
-    assert(ret == EGL_TRUE);
-
-    ifd
-        fprintf(stderr, "VERSIONS: %d %d\n", major, minor);
-
-    eglChooseConfig(state->egl_display, attributes, &config, 1, &num_config);
-    state->egl_context = eglCreateContext(state->egl_display, config, EGL_NO_CONTEXT, NULL);
-
-    state->egl_window = wl_egl_window_create(state->wl_surface, width, height);
-    state->egl_surface = eglCreateWindowSurface(state->egl_display, config, state->egl_window, NULL);
-    eglMakeCurrent(state->egl_display, state->egl_surface, state->egl_surface, state->egl_context);
-
-    ifd
-        fprintf(stderr, "Tried to make current");
-}
 
 
 int main(int argc, char *argv[])
@@ -91,8 +61,7 @@ int main(int argc, char *argv[])
     xdg_toplevel_add_listener(state.xdg_toplevel, &xdg_toplevel_listener, &state);
 
     // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
-    create_window(&state, state.width, state.height);
-
+    create_window_egl(&state, 1920, 1080);
 
     // Initialize GLAD after EGL context is current
     if (!gladLoadGLLoader((GLADloadproc)eglGetProcAddress)) {
@@ -100,25 +69,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f
-    };
-
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-
-
-    init_shader(&globalShader, "/shaders/vertex.vs", "/shaders/fragment.fs");
-
+    initgl(&state);
 
     // XDG Shell making the actual window
     xdg_toplevel_set_title(state.xdg_toplevel, "CLIENT!");
@@ -135,7 +86,7 @@ int main(int argc, char *argv[])
     while (wl_display_dispatch(state.wl_display) != -1)
     {
         if (state.closed){
-            break;
+            break; // This is only toggled when the compositor tells us to close, we do not close on our own yet!
         }
     }
 
