@@ -1,3 +1,4 @@
+// #include <cctype>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -33,33 +34,37 @@
 #include "../include/graphics.h"
 
 
+void wayland_init(struct client_state *state){
+    state->width = 1920;
+    state->height = 1080;
+    state->wl_display = wl_display_connect(NULL);
+    state->wl_registry = wl_display_get_registry(state->wl_display);
+
+    if (!state->wl_display)
+    {
+        fprintf(stderr, "Failed to connect to wayland display.\n");
+        return;
+    }
+
+    wl_registry_add_listener(state->wl_registry, &registry_listener, state);
+    wl_display_roundtrip(state->wl_display);
+    fprintf(stderr, "Connected to wayland display.\n");
+
+    state->wl_surface = wl_compositor_create_surface(state->compositor);
+    state->xdg_surface = xdg_wm_base_get_xdg_surface(state->xdg_wm_base, state->wl_surface); // Pass our surface to make a xdg surface
+
+    xdg_surface_add_listener(state->xdg_surface, &xdg_surface_listener, state);
+
+    state->xdg_toplevel = xdg_surface_get_toplevel(state->xdg_surface);
+
+    xdg_toplevel_add_listener(state->xdg_toplevel, &xdg_toplevel_listener, state);
+}
+
 int main(int argc, char *argv[])
 {
     struct client_state state = {0};
-    state.width = 1920;
-    state.height = 1080;
-    state.wl_display = wl_display_connect(NULL);
-    state.wl_registry = wl_display_get_registry(state.wl_display);
-
-    if (!state.wl_display)
-    {
-        fprintf(stderr, "Failed to connect to wayland display.\n");
-        return 1;
-    }
-
-    wl_registry_add_listener(state.wl_registry, &registry_listener, &state);
-    wl_display_roundtrip(state.wl_display);
-    fprintf(stderr, "Connected to wayland display.\n");
-
-    state.wl_surface = wl_compositor_create_surface(state.compositor);
-    state.xdg_surface = xdg_wm_base_get_xdg_surface(state.xdg_wm_base, state.wl_surface); // Pass our surface to make a xdg surface
-
-    xdg_surface_add_listener(state.xdg_surface, &xdg_surface_listener, &state);
-
-    state.xdg_toplevel = xdg_surface_get_toplevel(state.xdg_surface);
-
-    xdg_toplevel_add_listener(state.xdg_toplevel, &xdg_toplevel_listener, &state);
-
+    // Handles all the wayland related initialization code
+    wayland_init(&state);
     // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
     create_window_egl(&state, 1920, 1080);
 
@@ -77,7 +82,6 @@ int main(int argc, char *argv[])
 
     struct wl_callback *cb = wl_surface_frame(state.wl_surface);
     wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
-
 
     if (!eglMakeCurrent(state.egl_display, state.egl_surface, state.egl_surface, state.egl_context)) {
         fprintf(stderr, "Failed to make EGL context current: %d\n", eglGetError());
@@ -97,6 +101,5 @@ int main(int argc, char *argv[])
     xdg_surface_destroy(state.xdg_surface);
     wl_surface_destroy(state.wl_surface);
     wl_display_disconnect(state.wl_display);
-
     return 0;
 }
