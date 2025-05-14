@@ -1,77 +1,42 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
 #include <math.h>
-
-
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
-
 #include <EGL/egl.h>
 // #include <GL/gl.h>
 // #include <glad/glad.h>
 #include "../include/glad/glad.h"
-
 #include "xdg-shell-client-protocol.h"
-
 #include "globals.h"
 #include "shader.h"
 #include "memory.h"
-
 #include <assert.h>
 
-
+// TODO
+// Handle this better please 
+// Maybe make a struct that represents a renderable object since we are going to have several of these shaders and such
 struct shader globalShader;
 unsigned int VAO, VBO;
 
 /* Wayland Code */
-struct client_state
-{
-    struct wl_display *wl_display;
-    struct wl_compositor *compositor;
-    struct wl_shm *wl_shm;
-    struct wl_registry *wl_registry;
-    struct xdg_wm_base *xdg_wm_base;
+#include "../include/client_state.h" // Main client state used for the program
+#include "../include/wayland/wl_buffer.h" // Buffer listener 
+#include "../include/wayland/xdg_surface.h" // Xdg surface listener struct used in the program 
+#include "../include/wayland/xdg_toplevel.h" // Top level application stuff handles closing and resizing 
+#include "../include/wayland/wm_base.h" // Base wm
 
-    // Objects
-    struct wl_surface *wl_surface;
-    struct xdg_surface *xdg_surface;
-    struct xdg_toplevel *xdg_toplevel;
 
-    int width, height;
-    bool closed;
-
-    // State
-    float offset;
-    uint32_t last_frame;
-
-    // Egl things
-    EGLContext egl_context;
-    EGLSurface egl_surface;
-    struct wl_egl_window *egl_window;
-    EGLDisplay egl_display;
-};
-
-// buffer listener
-
-static void wl_buffer_release(void *data, struct wl_buffer *wl_buffer)
-{
-    wl_buffer_destroy(wl_buffer);
-}
-
-static const struct wl_buffer_listener wl_buffer_listener = {
-    .release = wl_buffer_release,
-};
-
+// DEPRECATED since we are now using opengl to draw each frame instead of just raw writing to the buffer itself 
 static struct wl_buffer *draw_frame(struct client_state *state)
 {
     // Drawing code
@@ -117,69 +82,7 @@ static struct wl_buffer *draw_frame(struct client_state *state)
     return buffer;
 }
 
-// Surface listener
-
-static void xdg_surface_configure(void *data, struct xdg_surface *xdg_surface, uint32_t serial)
-{
-    struct client_state *state = data;
-
-    xdg_surface_ack_configure(xdg_surface, serial);
-
-    if (state->height != 0 && state->width != 0){
-        glViewport(0, 0, state->width, state->height);
-    }
-    glClearColor(0.0, 1.0, 0.0, 1.0); // Example: green background
-    glClear(GL_COLOR_BUFFER_BIT);
-    eglSwapBuffers(state->egl_display, state->egl_surface);
-    wl_surface_commit(state->wl_surface);
-}
-
-static const struct xdg_surface_listener xdg_surface_listener = {
-    .configure = xdg_surface_configure,
-};
-
-
-// toplevel listener
-static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states){
-    struct client_state *state = data;
-    if (width == 0 || height == 0){
-        return;
-    }
-    if (state->egl_window){
-        wl_egl_window_resize(state->egl_window, width, height, 0, 0);
-        wl_surface_commit(state->wl_surface);
-    }
-    state->width = width;
-    state->height = height;
-}
-
-static void xdg_toplevel_close(void *data, struct xdg_toplevel *toplevel){
-    struct client_state *state = data;
-    state->closed = true;
-    ifd {
-        fprintf(stderr, "WANTING TO CLOSE!");
-    }
-}
-
-static const struct xdg_toplevel_listener xdg_toplevel_listener = {
-    .configure = xdg_toplevel_configure,
-    .close = xdg_toplevel_close
-};
-
-// xdg wm base
-
-static void
-xdg_wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base, uint32_t serial)
-{
-    xdg_wm_base_pong(xdg_wm_base, serial);
-}
-
-static const struct xdg_wm_base_listener xdg_wm_base_listener = {
-    .ping = xdg_wm_base_ping,
-};
-
 // Frame call back stuff
-
 static const struct wl_callback_listener wl_surface_frame_listener;
 
 /**
@@ -199,11 +102,6 @@ static void wl_surface_frame_done(void *data, struct wl_callback *cb, uint32_t t
         int elapsed = time - state->last_frame;
         state->offset += elapsed / 1000.0 * 24;
     }
-
-    // struct wl_buffer *buffer = draw_frame(state);
-    // wl_surface_attach(state->wl_surface, buffer, 0, 0);
-    // wl_surface_damage_buffer(state->wl_surface, 0, 0, INT32_MAX, INT32_MAX);
-    // wl_surface_commit(state->wl_surface);
 
     glViewport(0, 0, state->width, state->height);
     glClearColor(0.0, 0.4, 0.0, 0.5);
