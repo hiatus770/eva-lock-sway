@@ -31,8 +31,8 @@
 #include "../include/wayland/wm_base.h" // Base wm
 #include "../include/wayland/wl_callback_listener.h"
 #include "../include/wayland/registry_handler.h"
-#include "../include/graphics.h"
-
+#include "../include/graphics/graphics.h"
+#include "../include/graphics/camera.h"
 
 void wayland_init(struct client_state *state){
     state->width = 1920;
