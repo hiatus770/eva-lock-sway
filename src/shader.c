@@ -46,6 +46,22 @@ char* get_file_name_extension(const char* path){
     return result;
 }
 
+void set_bool(struct shader *shader, const char* name, bool value){
+    glUniform1i(glGetUniformLocation(shader->ID, name), value);
+}
+
+void set_int(struct shader* shader, const char* name, int value){
+    glUniform1i(glGetUniformLocation(shader->ID, name), value);
+}
+
+void set_float(struct shader* shader, const char* name, float value){
+    glUniform1f(glGetUniformLocation(shader->ID, name), value);
+}
+
+void set_mat4(struct shader* shader, const char* name, mat4 value){
+    glUniformMatrix4fv(glGetUniformLocation(shader->ID, name), 1, GL_FALSE, (float *)value);
+}
+
 void init_shader(struct shader* shader, const char* vertex_path, const char* fragment_path){
     // psuedo constructor for the shader
     char vertex_path_full[200] = PROJECT_DIRECTORY;
@@ -82,12 +98,15 @@ void init_shader(struct shader* shader, const char* vertex_path, const char* fra
 
     // Setup functions for the struct to use
     shader->use = &use;
+    shader->set_bool = &set_bool;
+    shader->set_int = &set_int;
+    shader->set_float = &set_float;
+    shader->set_mat4 = &set_mat4;
 }
 
 unsigned int compile(const char* path){
     char* source = get_source(path);
     int shader_type = GL_FRAGMENT_SHADER;
-
 
     if (strcmp(get_file_name_extension(path), "vs") == 0){
         shader_type = GL_VERTEX_SHADER;

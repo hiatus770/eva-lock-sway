@@ -7,7 +7,7 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
-#include <math.h>
+// #include <math.h>
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
