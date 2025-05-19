@@ -19,7 +19,7 @@
 #include "../include/glad/glad.h"
 #include "xdg-shell-client-protocol.h"
 #include "globals.h"
-#include "shader.h"
+#include "../include/graphics/shader.h" 
 #include "memory.h"
 #include <assert.h>
 

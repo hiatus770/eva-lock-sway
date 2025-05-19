@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-lwayland-client -lwayland-egl -lEGL -lGLESv2
+CFLAGS=-lwayland-client -lwayland-egl -lEGL -lGLESv2 -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -pthread 
 
 include_files=$(wildcard ../include/* ../include/*/* ./*)
 
