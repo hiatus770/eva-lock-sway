@@ -20,7 +20,6 @@
 #include "xdg-shell-client-protocol.h"
 #include "globals.h"
 #include "../include/graphics/shader.h" 
-#include "memory.h"
 #include <assert.h>
 
 /* Wayland Code */
@@ -32,7 +31,6 @@
 #include "../include/wayland/wl_callback_listener.h"
 #include "../include/wayland/registry_handler.h"
 #include "../include/graphics/graphics.h"
-#include "../include/graphics/camera.h"
 
 void wayland_init(struct client_state *state){
     state->width = 1920;

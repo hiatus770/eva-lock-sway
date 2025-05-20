@@ -7,6 +7,7 @@
 #include <GL/gl.h>
 #include <assert.h>
 #include "globals.h"
+#include "../include/logger.h"
 
 /**
 * Gets the file name extension without the . included, used for determing if its a vertex or fragment shader
@@ -71,7 +72,7 @@ void init_shader(struct shader* shader, const char* vertex_path, const char* fra
     strcat(fragment_path_full, fragment_path);
 
     ifd
-    fprintf(stderr, "FILE PATHS IN FULL\n %s \n %s\n", vertex_path_full, fragment_path_full);
+    log_debug("FILE PATHS IN FULL\n %s \n %s\n", vertex_path_full, fragment_path_full);
 
 
     unsigned int vertex, fragment;
@@ -90,7 +91,7 @@ void init_shader(struct shader* shader, const char* vertex_path, const char* fra
     if (!success){
         char infoLog[1000];
         glGetProgramInfoLog(shader->ID, 512, NULL, infoLog);
-        fprintf(stderr, "Error: Linking program %s and %s, error: %s", vertex_path, fragment_path, infoLog);
+        log_error("Error: Linking program %s and %s, error: %s", vertex_path, fragment_path, infoLog);
     }
 
     // Remove shaders now that we are done compiling and linking them!
@@ -126,14 +127,14 @@ unsigned int compile(const char* path){
         char log[10000];
 		GLsizei len;
 		glGetShaderInfoLog(shader_id, 10000, &len, log);
-		fprintf(stderr, "Error: compiling %s: %*s\n",
+		log_error("Error: compiling %s: %*s\n",
 			shader_type == GL_VERTEX_SHADER ? "vertex" : "fragment",
 			len, log);
 		exit(1);
     }
 
     ifd {
-        fprintf(stderr, "\nSUCCESSFULLY COMPILED %s NOW HAS ID: %d\n", path, shader_id);
+        log_debug("SUCCESSFULLY COMPILED %s NOW HAS ID: %d\n", path, shader_id);
     }
 
     return shader_id;
