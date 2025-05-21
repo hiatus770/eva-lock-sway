@@ -9,7 +9,6 @@ uniform mat4 projection;
 out vec3 our_color;
 out vec3 tex_coord; 
 // uniform vec3 camera_position;
-
 void main()
 {
     our_color = aColor;
