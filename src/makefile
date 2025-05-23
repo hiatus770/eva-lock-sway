@@ -27,7 +27,7 @@ c_files=xdg-shell-protocol.c \
 		glad.c
 
 build/main: main.c $(include_files)
-	echo "Making main c file"
+	@echo "Making main c file"
 	gcc -o build/main -g main.c $(c_files) $(CFLAGS) -I /home/hiatus/Documents/waylandplaying/include -lm
 
 test: test.c xdg-shell-client-protocol.h xdg-shell-protocol.c memory.h shader.h shader.c glad.c
