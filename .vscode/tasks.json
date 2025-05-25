@@ -5,18 +5,20 @@
             "label": "C/C++: gcc build active file",
             "command": "/usr/bin/gcc",
             "args": [
-                "xdg-shell-protocol.c", 
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
+                "shader.c",
+                "glad.c",
+                "xdg-shell-protocol.c",
+                "-I/home/hiatus/Documents/waylandplaying/include",
                 "-lwayland-client",
                 "-lrt",
-                "-lwayland-egl", 
-                "-lEGL", 
-                "-lGLESv2",
-                "shader.c", 
+                "-lwayland-egl",
+                "-lEGL",
+                "-lGLESv2" 
             ],
             "options": {
                 "cwd": "${fileDirname}"
