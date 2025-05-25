@@ -8,5 +8,5 @@ layout (location = 1) out vec4 bright_color;
 void main()
 {
     frag_color = vec4(our_color, 1.0f);
-    bright_color = vec4(1.0, 0.0, 0.0, 1.0);
+    bright_color = vec4(0.0, 0.0, 0.0, 1.0);
 }
