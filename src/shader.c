@@ -127,8 +127,8 @@ unsigned int compile(const char* path){
         char log[10000];
 		GLsizei len;
 		glGetShaderInfoLog(shader_id, 10000, &len, log);
-		log_error("Error: compiling %s: %*s\n",
-			shader_type == GL_VERTEX_SHADER ? "vertex" : "fragment",
+		log_error("Error: compiling %s %s: %*s\n",
+			shader_type == GL_VERTEX_SHADER ? "vertex" : "fragment", path,
 			len, log);
 		exit(1);
     }
