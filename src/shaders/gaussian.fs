@@ -30,4 +30,5 @@ void main()
         }
     }
     FragColor = vec4(result, 1.0);
+    // FragColor = vec4(texture(image, TexCoords).rgba.w,texture(image, TexCoords).rgba.w, texture(image, TexCoords).rgba.w, 1.0);
 }

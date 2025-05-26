@@ -55,11 +55,15 @@ void init_entity(struct entity *entity, struct camera *camera, struct shader *sh
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(float)));
         glEnableVertexAttribArray(1);
     }
-    if (entity->type == VERTICES_COLOR_TEXTURE){
-        // TODO: implement this too haha :sweat_smile:
+    if (entity->type == VERTICES_COLOR_TEXTURE){        
+        
     }
     if (entity->type == VERTICES_TEXTURE){
-        // TODO: implement this haha
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) 0);
+        glEnableVertexAttribArray(0);
+
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+        glEnableVertexAttribArray(1);
     }
 
     entity->render = &render_entity;

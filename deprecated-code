@@ -2,7 +2,7 @@
 
 // Main render function of the program
 void render(struct client_state *state){
-    glViewport(0,0, state->width, state->height);
+    Viewport(0,0, state->width, state->height);
     glClearColor(0.0, 0.0, 0.0, 0.5);
     glClear(GL_COLOR_BUFFER_BIT);
 

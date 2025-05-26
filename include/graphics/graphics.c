@@ -16,6 +16,7 @@
 #include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
 #include "../client_state.h"
 #include "eva.h"
+#include "map.h"
 #include "shader.h"
 #include "camera.h"
 #include "entity.h"
@@ -24,11 +25,15 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
+int SRC_HEIGHT = 1080; 
+int SRC_WIDTH = 1920; 
+
 // This is the main graphics file that will have all the opengl functionality and whatnot
 struct shader global_shader;
 struct shader text_shader;
 struct camera global_camera;
 struct entity test_entity;
+struct entity test_entity_2;
 float global_tick = 0.0f;
 
 // Bloom related code
@@ -38,7 +43,7 @@ unsigned int pingpongBuffer[2]; // This is the texture passed into each other
 unsigned int colorBuffers[2];
 unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
-font test_font;
+font matisse_bloom;
 struct shader b_shader;
 struct shader global_shader_bloom;
 struct shader gaussian;  /// Eventually adding more post processing effects!
@@ -48,7 +53,7 @@ struct shader final; // combines several or more textures from the framebuffers 
 font matisse;
 font timer;
 font helvetica;
-font clock_bloom; 
+font clock_bloom;
 
 float eva_gradient[] = {
     // lowkey probably should figure out how to do this in blender and then import it :)
@@ -70,44 +75,46 @@ float eva_gradient2[] = {
     1.0f,  -1.0f, 0.0f,  0.0f, 0.0f, 1.0f    // top
 };
 
-float eva_gradienttest[] = {
-    -1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 
-    -1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-     1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-     1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-}; 
 
 // Main render function of the program
 void render(struct client_state *state){
     // glViewport(0,0, state->width, state->height);
-    glViewport(0,0, 1920, 1080);
-    glClearColor(0.0, 0.0, 0.0, 0.5);
+    log_debug("WIDTH AND HEIGHT %d %d", SRC_WIDTH, SRC_HEIGHT); 
+    
+    glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
+    // glViewport(0,0, 1920, 1080);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    vec3 look_at_goal = {-0.5, 0.0, -1.0f};
-    glm_vec3_copy(look_at_goal, global_camera.direction);
-    
+    // vec3 look_at_goal = {-0.5, 0.0, -1.0f};
+    // glm_vec3_copy(look_at_goal, global_camera.direction);
+
     // TODO make this call all the entity's render function in the program!
     char *goal = "h活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
 
     float color[] = {1.0, 0.5, 0.0};
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    // glViewport(0,0, 1920, 1080);
+    glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     test_entity.render(&test_entity); // maps to texture 0  -- no bloom
-    render_font(&test_font, goal, -1.0, -1.0, 0.005/3, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
+    render_font(&matisse_bloom, goal, -3.0, -0.1, 0.005/3, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
     render_clock(&clock_bloom, global_camera);
+    // test_entity_2.render(&test_entity_2); // maps to texture 0  -- no bloom
 
     glActiveTexture(GL_TEXTURE0); // this line is needed for it to work, probably because without it the ping pong buffer has no clue what its doing the texturing on
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     bool horizontal = true, first_iteration = true;
-    unsigned int amount = 0;
+    unsigned int amount = 20;
     gaussian.use(&gaussian);
     gaussian.set_int(&gaussian, "image", 0);
-    for (unsigned int i= 0; i < amount; i++){
+    for (unsigned int i = 0; i < amount; i++){
         glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]); // me when boolean as index
+        // glViewport(0,0, 1920, 1080);
+        glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
         gaussian.set_int(&gaussian, "horizontal", horizontal);
         glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongBuffer[!horizontal]);
         render_quad();
@@ -117,9 +124,14 @@ void render(struct client_state *state){
         }
     }
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // glViewport(0,0, 1920, 1080);
+    // glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
+    glViewport(0,0, state->width, state->height);
 
     // Now render the final outptut
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
     final.use(&final);
     final.set_int(&final, "scene", 0);
     final.set_int(&final, "bloom", 1);
@@ -127,9 +139,15 @@ void render(struct client_state *state){
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]); // take our original source
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
+
+    
+    final.use(&final);
     render_quad();
+    
+    
 
 
+    // glDisable(GL_DEPTH_TEST);
 
     // global_shader.use(&global_shader);
 
@@ -144,27 +162,21 @@ void render(struct client_state *state){
 
     // glBindVertexArray(VAO);
     // glDrawArrays(GL_TRIANGLES, 0, 6);
-    
-    
-    
+
+
+
     // glm_mat4_identity(test_entity.model);
     // glm_translate(test_entity.model, model_translate);
     // test_entity.render(&test_entity);
-    
-    
-    
-    
+
+
+
+
     eglSwapBuffers(state->egl_display, state->egl_surface);
-    
-    
+
+
 
 }
-/**
-* This function is responsible for compiling and setting up shaders for their use in the render() function of the program, this is basically run for initializing opengl and all its quirks
-* - make sure to have the egl context ready before calling this
-* - make sure that all the file paths are correct when running this command as well
-*/
-
 
 /**
 * This function handles getting the codepoints given a utf-8 encoded string for functionality later in the program
@@ -242,6 +254,8 @@ uint32_t* utf8_to_codepoints(const char *s, size_t *out_len) {
 void initgl(struct client_state *state){
 
     // REGULAR RENDERING CODE
+    vec3 temp_position = {0.0f, 0.0f, 3.0f};
+    init_camera(&global_camera, temp_position);
 
     char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
     init_font(&matisse, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.0f);
@@ -250,21 +264,20 @@ void initgl(struct client_state *state){
 
     init_font(&helvetica, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Helvetica.ttf", goal, 48*1.5, 1.0f, 1.0f);
 
-    float colors[][3] = {{0.745, 0.341, 0.254}, {0.67f, 0.792f, 0.301f}, {0.227, 0.5686, 0.2901}};
+    // float colors[][3] = {{0.745, 0.341, 0.254}, {0.67f, 0.792f, 0.301f}, {0.227, 0.5686, 0.2901}};
+    float colors[][3] = {{0.54, 0.06, 0.03}, {0.45f, 0.74f, 0.06f}, {0.03, 0.27, 0.06}};
+    // float colors[][3] = {{2*0.745, 2*0.341, 2*0.254}, {2*0.67f, 2*0.792f, 2*0.301f}, {2*0.227, 2*0.5686, 2*0.2901}};
+    // float colors[][3] = {{5.0, 0.0, 0.0}, {0.67f, 0.792f, 0.301f}, {0.227, 0.5686, 0.2901}};
 
     int length;
     float* main_eva_gradient = generate_gradient(3, colors, &length);
 
     glEnable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST); 
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
     init_shader(&global_shader, "/shaders/vertex.vs", "/shaders/fragment.fs");
     init_shader(&text_shader, "/shaders/text_vertex.vs", "/shaders/text_fragment.fs");
-
-    vec3 temp_position = {0.0f, 0.0f, 10.0f};
-    init_camera(&global_camera, temp_position);
-    global_camera.set_position(&global_camera, temp_position);
 
     // BLOOOM RELATED CODE
     init_shader(&global_shader_bloom, "/shaders/vertex.vs", "/shaders/bloom_fragment.fs"); // takes in two textures and combines them into one output
@@ -272,15 +285,20 @@ void initgl(struct client_state *state){
     init_shader(&gaussian, "/shaders/gaussian.vs", "/shaders/gaussian.fs"); // does ping pong gaussian blurring on the texture several times
     init_shader(&final, "/shaders/final.vs", "/shaders/final.fs"); // takes in two textures and combines them into one output
 
-    init_font(&test_font, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.0f);
+    init_font(&matisse_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.0f);
     init_font(&clock_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Digital-Display.ttf", goal, 48*2, 1.0f, 1.0f);
 
-    vec3 forward = {0.1, 0.5, 0.0};
+    vec3 forward = {0.0, 0.0, -0.01};
     // init_entity(&test_entity, &global_camera, &global_shader, VERTICES_COLOR, eva_gradienttest, sizeof(eva_gradienttest), GL_TRIANGLES);
-    // init_entity(&test_entity, &global_camera, &global_shader_bloom, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
-    init_entity(&test_entity, &global_camera, &global_shader_bloom, VERTICES_COLOR, eva_gradienttest, sizeof(eva_gradienttest), GL_TRIANGLE_STRIP); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
-    // glm_translate(test_entity.model, forward);
-    // glm_scale(test_entity.model, (vec3){0.1, 0.1, 0.1});
+    init_entity(&test_entity, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    vec3 forward2 = {-1.0, 0.0, 1.0};
+    init_entity(&test_entity_2, &global_camera, &global_shader_bloom, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    // init_entity(&test_entity, &global_camera, &global_shader_bloom, VERTICES_COLOR, eva_gradienttest, sizeof(eva_gradienttest), GL_TRIANGLE_STRIP); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    glm_translate(test_entity.model, forward);
+    glm_translate(test_entity_2.model, forward2);
+    // glm_scale(test_entity.model, (vec3){4.0f, 4.0, 1.0f});
+    glm_scale(test_entity_2.model, (vec3){0.2f, 0.2f, 0.01f});
+    glm_scale(test_entity.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 0.01f});
 
     glGenFramebuffers(1, &fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -289,8 +307,11 @@ void initgl(struct client_state *state){
 
     for (unsigned int i = 0; i < 2; i++){
         glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        // glTexImage2D(
+        //     GL_TEXTURE_2D, 0, GL_RGBA16F, 1920, 1080, 0, GL_RGBA, GL_FLOAT, NULL
+        // );
         glTexImage2D(
-            GL_TEXTURE_2D, 0, GL_RGBA16F, 1920, 1080, 0, GL_RGBA, GL_FLOAT, NULL
+            GL_TEXTURE_2D, 0, GL_RGBA16F, SRC_WIDTH, SRC_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL
         );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -298,6 +319,12 @@ void initgl(struct client_state *state){
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
     }
+
+    unsigned int rboDepth;
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SRC_WIDTH, SRC_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
     glDrawBuffers(2, attachments);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -309,7 +336,7 @@ void initgl(struct client_state *state){
     for (unsigned int i = 0; i < 2; i++){
         glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
         glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, 1920, 1080, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SRC_WIDTH, SRC_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

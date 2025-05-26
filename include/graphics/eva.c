@@ -2,7 +2,9 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "../logger.h"
+#include <sys/time.h> 
 #include <time.h>
 #include <stdio.h>
 #include "text.h"
@@ -11,7 +13,10 @@
 void render_clock(font* timer_font, struct camera global_camera){
     time_t now;
     struct tm *tm;
+    struct timeval tv; 
     now = time(0);
+    
+    gettimeofday(&tv, NULL); 
 
     if ((tm = localtime (&now)) == NULL) {
         log_error("Error extracting time stuff\n");
@@ -24,8 +29,8 @@ void render_clock(font* timer_font, struct camera global_camera){
 
     char* out_hours_minutes = malloc(20 * sizeof(char));
     char* out_seconds = malloc(20 * sizeof(char));
-    sprintf(out_hours_minutes, "%02d:%02d", tm->tm_hour, tm->tm_min);
-    sprintf(out_seconds, ":%02d", tm->tm_sec);
+    sprintf(out_hours_minutes, "%02d:%02d", tm->tm_min, tm->tm_sec);
+    sprintf(out_seconds, ":%02d", (int) (tv.tv_usec / 1000) % 100);
     // char *test = "htesttst";
 
     render_font(timer_font, out_hours_minutes, x, y, 0.002, CLOCK_TEXT_COLOR, global_camera);

@@ -3,6 +3,7 @@
 #include <math.h>
 #include "../cglm/cglm.h"
 #include "../cglm/quat.h"
+#include "../client_state.h"
 
 struct camera {
     vec3 direction;

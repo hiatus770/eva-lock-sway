@@ -1,4 +1,8 @@
 #include "camera.h"
+#include "../client_state.h"
+#include "../../src/globals.h"
+
+extern struct client_state state;
 
 void set_position(struct camera *camera, vec3 newPos){
     glm_vec3_copy(newPos, camera->position);
@@ -11,7 +15,8 @@ void look_at(struct camera *camera, vec3 look_at_pos){
 
 mat4 *get_projection(struct camera *camera){
     glm_mat4_identity(camera->projection);
-    glm_perspective(glm_rad(45.0f), 1920.0f/1080.0f, 0.1f, 20.0f, camera->projection); // look into this a bit more?
+    // glm_perspective(glm_rad(45.0f), 1920.0f/1080.0f, 0.1f, 20.0f, camera->projection); // look into this a bit more?
+    glm_perspective(glm_rad(45.0f), (float)SRC_WIDTH/(float)SRC_HEIGHT, 0.1f, 20.0f, camera->projection); // look into this a bit more?
     return &camera->projection;
 }
 
