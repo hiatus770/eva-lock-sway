@@ -37,6 +37,8 @@ struct entity {
     enum LOAD_TYPE type;  // This is the type of loading that we are going to use for the shader!
     mat4 model; // This stores the position and rotation of the object!
     unsigned int gl_enum;
+    
+    unsigned int texture;  // if we render w/ texture we change the way we render 
 
 
     void (*render)(struct entity *entity);  // This should be in charge of setting all the proper model transforms etc etc
@@ -45,3 +47,5 @@ struct entity {
 void render_entity(struct entity *entity); 
 
 void init_entity(struct entity *entity, struct camera *camera, struct shader *shader, enum LOAD_TYPE new_type, float vert_data[], int data_size, unsigned int gl_draw_enum); 
+
+void init_entity_texture(struct entity *entity, struct camera *camera, struct shader *shader, enum LOAD_TYPE new_type, float vert_data[], int data_size, unsigned int gl_draw_enum, char* texture_path); 
