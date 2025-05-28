@@ -94,17 +94,20 @@ float quad[] = {
 // Main render function of the program
 void render(struct client_state *state){
     // glViewport(0,0, state->width, state->height);
-    log_debug("WIDTH AND HEIGHT %d %d", SRC_WIDTH, SRC_HEIGHT);
 
     glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // vec3 look_at_goal = {-0.5, 0.0, -1.0f};
+    vec3 look_at_goal = {-0.5, 0.0, -1.0f};
+    // vec3 camera_position = {3.0f, 0.0, 4.0f}; 
     // glm_vec3_copy(look_at_goal, global_camera.direction);
+    // glm_vec3_copy(camera_position, global_camera.position);
 
     // TODO make this call all the entity's render function in the program!
-    char *goal = "h活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
+    char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
+    char *top_left = "活動限界まで"; 
+    char *top_left_secondary = "あと";  
 
     float color[] = {1.0, 0.5, 0.0};
 
@@ -115,9 +118,23 @@ void render(struct client_state *state){
 
     main_gradient.render(&main_gradient); // maps to texture 0  -- no bloom
     main_panel.render(&main_panel); 
-    render_font(&matisse_bloom, goal, -3.0, -0.1, 0.005/3, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
+   
+    float x_top_left = -0.78, y_top_left = 0.49; 
+    render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.10, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
+    render_font(&matisse_bloom, top_left_secondary, x_top_left, y_top_left - 0.16, (0.005/4)*1.10, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
     render_clock(&clock_bloom, global_camera);
-    test_entity_2.render(&test_entity_2); // maps to texture 0  -- no bloom
+    // test_entity_2.render(&test_entity_2); // maps to texture 0  -- no bloom
+    
+    for(float i = -2.0f; i < 2.0f; i += 0.3333f){
+        for(float j = -2.0f; j < 2.0f; j += 0.33333f){
+            // char* measure = malloc(50 * sizeof(char)); 
+            // sprintf(measure, "x:%.6f", i); 
+            // render_font(&matisse_bloom, measure, i, j, 0.0004, (vec3){1.0, 1.0, 0.0}, global_camera); 
+            // sprintf(measure, "y:%.6f", j); 
+            // render_font(&matisse_bloom, measure, i, j + 0.1, 0.0004, CLOCK_TEXT_COLOR, global_camera); 
+            // free(measure); 
+        }
+    }
 
     glActiveTexture(GL_TEXTURE0); // this line is needed for it to work, probably because without it the ping pong buffer has no clue what its doing the texturing on
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -147,37 +164,13 @@ void render(struct client_state *state){
     final.set_int(&final, "bloom", 1);
     glActiveTexture(GL_TEXTURE0); // Prepare to bind color buffer from our fbo to texture
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]); // take our original source
+    // glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
 
 
     final.use(&final);
     render_quad();
-
-
-
-
-    // glDisable(GL_DEPTH_TEST);
-
-    // global_shader.use(&global_shader);
-
-    // vec3 model_translate = {-1.0f, -1.0f, 0.0f};
-    // mat4 model; glm_mat4_identity(model); glm_translate(model, model_translate);
-    // mat4 projection; glm_perspective(glm_rad(45.0f), 1920.0f/1080.0f, 0.1f, 100.0f, projection);
-
-    // global_shader.set_mat4(&global_shader, "model", model);
-    // global_shader.set_mat4(&global_shader, "view", *global_camera.get_view_matrix(&global_camera));
-    // global_shader.set_mat4(&global_shader, "projection", *global_camera.get_projection_matrix(&global_camera));
-
-
-    // glBindVertexArray(VAO);
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
-
-
-
-    // glm_mat4_identity(test_entity.model);
-    // glm_translate(test_entity.model, model_translate);
-    // test_entity.render(&test_entity);
 
     eglSwapBuffers(state->egl_display, state->egl_surface);
 }
@@ -256,8 +249,6 @@ uint32_t* utf8_to_codepoints(const char *s, size_t *out_len) {
 }
 
 
-#include <GL/gl.h>
-#include <stdio.h>
 
 // The callback signature
 void APIENTRY openglDebugCallback(GLenum source,
@@ -336,11 +327,9 @@ void initgl(struct client_state *state){
     vec3 temp_position = {0.0f, 0.0f, 3.0f};
     init_camera(&global_camera, temp_position);
 
-    char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
+    char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レースあと";
     init_font(&matisse, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.0f);
-
     init_font(&timer, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Digital-Display.ttf", goal, 300, 1.0f, 2.0f);
-
     init_font(&helvetica, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Helvetica.ttf", goal, 48*1.5, 1.0f, 1.0f);
 
     // float colors[][3] = {{0.745, 0.341, 0.254}, {0.67f, 0.792f, 0.301f}, {0.227, 0.5686, 0.2901}};
@@ -363,8 +352,8 @@ void initgl(struct client_state *state){
     init_shader(&gaussian, "/shaders/gaussian.vs", "/shaders/gaussian.fs"); // does ping pong gaussian blurring on the texture several times
     init_shader(&final, "/shaders/final.vs", "/shaders/final.fs"); // takes in two textures and combines them into one output
 
-    init_font(&matisse_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.0f);
-    init_font(&clock_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Digital-Display.ttf", goal, 48*2, 1.0f, 1.0f);
+    init_font(&matisse_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.3f);
+    init_font(&clock_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
 
     // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, main_eva_gradient, length * sizeof(float), GL_TRIANGLES, "./textures/awesomeface.png"); 
     init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "./textures/awesomeface.png"); 

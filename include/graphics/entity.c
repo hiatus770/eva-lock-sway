@@ -136,7 +136,7 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
         log_debug("\n\nTEXTURE BEING INITIALIZED WITH VAO AND VBO %d %d", entity->VAO, entity->VBO);
         int width, height, nrChannels;
         stbi_set_flip_vertically_on_load(true);
-        unsigned char *data = stbi_load("/home/hiatus/Documents/waylandplaying/src/textures/clock_background.png", &width, &height, &nrChannels, 0);
+        unsigned char *data = stbi_load("/home/hiatus/Documents/waylandplaying/src/textures/clock_5.png", &width, &height, &nrChannels, 0);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);

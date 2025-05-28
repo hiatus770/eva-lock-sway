@@ -11,6 +11,7 @@
 #include "../../src/globals.h"
 
 void render_clock(font* timer_font, struct camera global_camera){
+    
     time_t now;
     struct tm *tm;
     struct timeval tv; 
@@ -25,16 +26,15 @@ void render_clock(font* timer_font, struct camera global_camera){
 
     // printf("Current time: %02d:%02d:%02d", tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-    float x = 0.0f, y = 0.5f;
+    float x = -0.55f, y = -0.65f;
 
     char* out_hours_minutes = malloc(20 * sizeof(char));
     char* out_seconds = malloc(20 * sizeof(char));
-    sprintf(out_hours_minutes, "%02d:%02d", tm->tm_min, tm->tm_sec);
+    sprintf(out_hours_minutes, "%01d:%02d", tm->tm_min%10, tm->tm_sec);
     sprintf(out_seconds, ":%02d", (int) (tv.tv_usec / 1000) % 100);
-    // char *test = "htesttst";
 
-    render_font(timer_font, out_hours_minutes, x, y, 0.002, CLOCK_TEXT_COLOR, global_camera);
-    render_font(timer_font, out_seconds, x + 1.16, y, 0.001, CLOCK_TEXT_COLOR, global_camera);
+    render_font(timer_font, out_hours_minutes, x, y, 0.0008*0.9, CLOCK_TEXT_COLOR, global_camera);
+    render_font(timer_font, out_seconds, x + 1.27, y, 0.0004*0.9, CLOCK_TEXT_COLOR, global_camera);
 }
 
 float* generate_gradient(int color_count, float (*arr)[3], int* length){
@@ -70,12 +70,6 @@ float* generate_gradient(int color_count, float (*arr)[3], int* length){
         fprintf(stderr, "%f ", flat[i]);
         if (i % 6 == 5) fprintf(stderr, "\n");
     }
-
-    // if we have 3 colors in the array
-    // a b c d
-    // a b c d
-
-
 
 
     return (float*)rarr;
