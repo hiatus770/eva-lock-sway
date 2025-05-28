@@ -6,5 +6,6 @@
 
 // #define CLOCK_TEXT_COLOR (vec3){0.9933f, 0.647f, 0.0666f}
 #define CLOCK_TEXT_COLOR (vec3){0.59, 0.23f, 0.00f}
+#define CLOCK_COLOR_RAW 0.59, 0.23f, 0.00f,
 // #define CLOCK_TEXT_COLOR (vec3){0.5f, 0.5f, 0.0f}
 extern int SRC_HEIGHT, SRC_WIDTH; 

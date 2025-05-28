@@ -35,8 +35,14 @@ struct shader text_shader;
 struct camera global_camera;
 struct entity test_entity;
 struct entity test_entity_2;
-struct entity main_gradient; 
-struct entity main_panel; 
+struct entity main_gradient;
+struct entity main_panel;
+struct entity main_border;
+struct entity slant; 
+struct entity border_1; // rendered once
+struct entity border_2; // rendered once
+struct entity border_bottom;  // rendered several times
+
 
 // Bloom related code
 unsigned int fbo;
@@ -50,7 +56,7 @@ struct shader b_shader;
 struct shader global_shader_bloom; // same as global shader but incorporates bloom effect into the object
 struct shader gaussian;  /// Eventually adding more post processing effects!
 struct shader final; // combines several or more textures from the framebuffers into one final output
-struct shader texture_shader; 
+struct shader texture_shader;
 
 // Main fonts used throughout
 font matisse;
@@ -86,9 +92,19 @@ float quad[] = {
      1.0f, -1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,   // bottom right
     -1.0f, -1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,   // bottom left
     -1.0f, -1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,   // bottom left
-    -1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f,    // top left 
+    -1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 1.0f,    // top left
     1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f  // top right
 };
+
+float quad_color[] = {
+    0.5f,  0.5f, 0.0f, CLOCK_COLOR_RAW   // top right
+    0.5f, -0.5f, 0.0f, CLOCK_COLOR_RAW   // bottom right
+   -0.5f, -0.5f, 0.0f, CLOCK_COLOR_RAW
+   -0.5f, -0.5f, 0.0f, CLOCK_COLOR_RAW
+   -0.5f,  0.5f, 0.0f, CLOCK_COLOR_RAW
+    0.5f,  0.5f, 0.0f, CLOCK_COLOR_RAW
+};
+
 
 
 // Main render function of the program
@@ -100,14 +116,14 @@ void render(struct client_state *state){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     vec3 look_at_goal = {-0.5, 0.0, -1.0f};
-    // vec3 camera_position = {3.0f, 0.0, 4.0f}; 
+    // vec3 camera_position = {3.0f, 0.0, 4.0f};
     // glm_vec3_copy(look_at_goal, global_camera.direction);
     // glm_vec3_copy(camera_position, global_camera.position);
 
     // TODO make this call all the entity's render function in the program!
     char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
-    char *top_left = "活動限界まで"; 
-    char *top_left_secondary = "あと";  
+    char *top_left = "活動限界まで";
+    char *top_left_secondary = "あと";
 
     float color[] = {1.0, 0.5, 0.0};
 
@@ -117,22 +133,57 @@ void render(struct client_state *state){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     main_gradient.render(&main_gradient); // maps to texture 0  -- no bloom
-    main_panel.render(&main_panel); 
-   
-    float x_top_left = -0.78, y_top_left = 0.49; 
-    render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.10, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
-    render_font(&matisse_bloom, top_left_secondary, x_top_left, y_top_left - 0.16, (0.005/4)*1.10, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
+    main_panel.render(&main_panel);
+
+
+    // Code for rendering the clock
+    float x_top_left = -0.75, y_top_left = 0.49;
     render_clock(&clock_bloom, global_camera);
+
+    // // Code for text top left of clock
+    render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
+    render_font(&matisse_bloom, top_left_secondary, x_top_left, y_top_left - 0.16, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
     // test_entity_2.render(&test_entity_2); // maps to texture 0  -- no bloom
+
+    // Code for the main border
+    float bl_x = -0.56f, bl_y = -0.7f;
+    float line_w = 0.02f;
+    draw_line(&main_border, bl_x, bl_y, 2.52f, line_w);
+    float l_h = 0.9f;
+    draw_line(&main_border, bl_x, bl_y, line_w, l_h);
+    float l_w = 0.22f;
+    draw_line(&main_border, bl_x - l_w, bl_y + l_h, l_w + line_w, line_w);
+
+    // reposition ourselves
+    float cur_x = bl_x - l_w;
+    float cur_y = bl_y + l_h;
+
+    float temp_h = 0.47;
+    draw_line(&main_border, cur_x, cur_y, line_w, temp_h);
+    cur_y += temp_h;
+
+    temp_h = 0.77;
+    draw_line(&main_border, cur_x, cur_y, temp_h, line_w);
+    cur_x += temp_h; 
+
+    draw_slant(&slant, cur_x, cur_y, line_w, cur_x+0.06f*1.2, cur_y-0.11f*1.2); 
+    cur_x += 0.06f*1.2; 
+    cur_y -= 0.11f*1.2;
     
+    temp_h = 2.0; 
+    draw_line(&main_border, cur_x, cur_y, 1.96 - cur_x, line_w);
+    
+
+
+
     for(float i = -2.0f; i < 2.0f; i += 0.3333f){
         for(float j = -2.0f; j < 2.0f; j += 0.33333f){
-            // char* measure = malloc(50 * sizeof(char)); 
-            // sprintf(measure, "x:%.6f", i); 
-            // render_font(&matisse_bloom, measure, i, j, 0.0004, (vec3){1.0, 1.0, 0.0}, global_camera); 
-            // sprintf(measure, "y:%.6f", j); 
-            // render_font(&matisse_bloom, measure, i, j + 0.1, 0.0004, CLOCK_TEXT_COLOR, global_camera); 
-            // free(measure); 
+            // char* measure = malloc(50 * sizeof(char));
+            // sprintf(measure, "x:%.6f", i);
+            // render_font(&matisse_bloom, measure, i, j, 0.0004, (vec3){1.0, 1.0, 0.0}, global_camera);
+            // sprintf(measure, "y:%.6f", j);
+            // render_font(&matisse_bloom, measure, i, j + 0.1, 0.0004, CLOCK_TEXT_COLOR, global_camera);
+            // free(measure);
         }
     }
 
@@ -322,7 +373,7 @@ void enableGLDebug() {
 
 
 void initgl(struct client_state *state){
-    enableGLDebug(); 
+    enableGLDebug();
     // REGULAR RENDERING CODE
     vec3 temp_position = {0.0f, 0.0f, 3.0f};
     init_camera(&global_camera, temp_position);
@@ -355,18 +406,20 @@ void initgl(struct client_state *state){
     init_font(&matisse_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.3f);
     init_font(&clock_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
 
-    // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, main_eva_gradient, length * sizeof(float), GL_TRIANGLES, "./textures/awesomeface.png"); 
-    init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "./textures/awesomeface.png"); 
+    // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, main_eva_gradient, length * sizeof(float), GL_TRIANGLES, "./textures/awesomeface.png");
+    init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "./textures/awesomeface.png");
     // init_entity(&main_gradient, &global_camera, &global_shader, VERTICES_COLOR, eva_gradient2, sizeof(eva_gradient2), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&main_gradient, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&test_entity, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&test_entity_2, &global_camera, &global_shader_bloom, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
-    
+    init_entity(&main_border, &global_camera, &global_shader_bloom, VERTICES_COLOR, quad_color,  sizeof(quad_color), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    init_entity(&slant, &global_camera, &global_shader_bloom, VERTICES_COLOR, quad_color,  sizeof(quad_color), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+
     glm_translate(main_gradient.model, (vec3){0.0, 0.0, -0.01});
     glm_scale(main_gradient.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 0.01f});
     glm_scale(main_panel.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 0.01f});
     glm_translate(test_entity_2.model, (vec3){-1.0, 0.0, 1.0});
-    glm_translate(main_panel.model, (vec3){0.0, 0.0, -0.001f}); 
+    glm_translate(main_panel.model, (vec3){0.0, 0.0, -0.001f});
     glm_scale(test_entity_2.model, (vec3){0.2f, 0.2f, 0.01f});
 
     glGenFramebuffers(1, &fbo);
