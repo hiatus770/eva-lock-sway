@@ -62,6 +62,7 @@ struct shader texture_shader;
 font matisse;
 font timer;
 font helvetica;
+font helvetica_bloom;
 font clock_bloom;
 
 float eva_gradient[] = {
@@ -105,12 +106,19 @@ float quad_color[] = {
     0.5f,  0.5f, 0.0f, CLOCK_COLOR_RAW
 };
 
+float red_quad[] = {
+    0.5f,  0.5f, 0.0f, GLOW_COLOR_RED_RAW   // top right
+    0.5f, -0.5f, 0.0f, GLOW_COLOR_RED_RAW   // bottom right
+   -0.5f, -0.5f, 0.0f, GLOW_COLOR_RED_RAW
+   -0.5f, -0.5f, 0.0f, GLOW_COLOR_RED_RAW
+   -0.5f,  0.5f, 0.0f, GLOW_COLOR_RED_RAW
+    0.5f,  0.5f, 0.0f, GLOW_COLOR_RED_RAW
+};
+
 
 
 // Main render function of the program
 void render(struct client_state *state){
-    // glViewport(0,0, state->width, state->height);
-
     glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -124,21 +132,22 @@ void render(struct client_state *state){
     char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レース";
     char *top_left = "活動限界まで";
     char *top_left_secondary = "あと";
+    char *active_time = "ACTIVE TIME REMAINING:";
 
     float color[] = {1.0, 0.5, 0.0};
 
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    // glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     main_gradient.render(&main_gradient); // maps to texture 0  -- no bloom
     main_panel.render(&main_panel);
 
-
     // Code for rendering the clock
     float x_top_left = -0.75, y_top_left = 0.49;
     render_clock(&clock_bloom, global_camera);
+    // Active time remaining
+    render_font(&helvetica_bloom, active_time, x_top_left + 0.80, y_top_left-0.04, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera); 
 
     // // Code for text top left of clock
     render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
@@ -154,7 +163,6 @@ void render(struct client_state *state){
     float l_w = 0.22f;
     draw_line(&main_border, bl_x - l_w, bl_y + l_h, l_w + line_w, line_w);
 
-    // reposition ourselves
     float cur_x = bl_x - l_w;
     float cur_y = bl_y + l_h;
 
@@ -172,9 +180,20 @@ void render(struct client_state *state){
     
     temp_h = 2.0; 
     draw_line(&main_border, cur_x, cur_y, 1.96 - cur_x, line_w);
+    cur_x = 1.96; 
     
-
-
+    temp_h = 1.24; 
+    draw_line(&main_border, cur_x, cur_y - temp_h, line_w, temp_h+line_w); 
+    
+    // Box code
+    // INTERNAL
+    draw_box(&main_border, 1.2, 0.15, 0.7, 0.32, line_w/2); 
+    draw_box(&main_border, 1.2, 0.15 - 0.15 - line_w*2, 0.7, 0.15, line_w/2); 
+    
+    
+    // Main energy supply system
+    // draw_box(&main_border, )
+    
 
     for(float i = -2.0f; i < 2.0f; i += 0.3333f){
         for(float j = -2.0f; j < 2.0f; j += 0.33333f){
@@ -405,6 +424,7 @@ void initgl(struct client_state *state){
 
     init_font(&matisse_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.3f);
     init_font(&clock_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
+    init_font(&helvetica_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Helvetica.ttf", goal, 48*1, 1.0f, 1.0f);
 
     // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, main_eva_gradient, length * sizeof(float), GL_TRIANGLES, "./textures/awesomeface.png");
     init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "./textures/awesomeface.png");
@@ -513,7 +533,7 @@ void render_quad()
         glGenBuffers(1, &quadVBO);
         glBindVertexArray(quadVAO);
         glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_DYNAMIC_DRAW);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
         glEnableVertexAttribArray(1);

@@ -68,7 +68,7 @@ void init_entity(struct entity *entity, struct camera *camera, struct shader *sh
     // Now gen the buffers
     glGenBuffers(1, &entity->VBO);
     glBindBuffer(GL_ARRAY_BUFFER, entity->VBO);
-    glBufferData(GL_ARRAY_BUFFER, data_size, vert_data, GL_STATIC_DRAW); // Might have to change the hints to opengl to make it run faster
+    glBufferData(GL_ARRAY_BUFFER, data_size, vert_data, GL_DYNAMIC_DRAW); // Might have to change the hints to opengl to make it run faster
     log_debug("INITIALIZING ARRAY WITH SIZE %d", data_size);
 
     // Now is where we have to be careful since the way we load depends on what we are doing, for now we will assume a few things about textures, colors etc
@@ -121,7 +121,7 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
     // Now gen the buffers
     glGenBuffers(1, &entity->VBO);
     glBindBuffer(GL_ARRAY_BUFFER, entity->VBO);
-    glBufferData(GL_ARRAY_BUFFER, data_size, vert_data, GL_STATIC_DRAW); // Might have to change the hints to opengl to make it run faster
+    glBufferData(GL_ARRAY_BUFFER, data_size, vert_data, GL_DYNAMIC_DRAW); // Might have to change the hints to opengl to make it run faster
     log_debug("INITIALIZING TEXTURE ARRAY WITH SIZE %d", data_size);
 
     // Now is where we have to be careful since the way we load depends on what we are doing, for now we will assume a few things about textures, colors etc
@@ -131,6 +131,7 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
     }
     if (entity->type == VERTICES_COLOR){
         // This is probably the most common thing we are going to be rendering
+        
     }
     if (entity->type == VERTICES_COLOR_TEXTURE){
         log_debug("\n\nTEXTURE BEING INITIALIZED WITH VAO AND VBO %d %d", entity->VAO, entity->VBO);
@@ -163,7 +164,7 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
         glEnableVertexAttribArray(2);
     }
     if (entity->type == VERTICES_TEXTURE){
-
+        // This is a single color 
     }
     log_error("[%s] floats=%d fpv=%d verts=%d\n",
            (entity->type==VERTICES_COLOR?"gradient":"panel"),

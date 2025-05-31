@@ -13,7 +13,7 @@ CFLAGS=	-lwayland-client \
 		-I/usr/lib/glib-2.0/include \
 		-I/usr/include/sysprof-6 \
 		-pthread -Wall \
-		-pg
+		-pg 
 
 include_files=$(wildcard ../* ../include/* ../include/*/* ./*)
 c_files=xdg-shell-protocol.c \

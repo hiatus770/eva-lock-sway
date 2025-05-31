@@ -12,7 +12,6 @@
 #include "entity.h"
 
 void render_clock(font* timer_font, struct camera global_camera){
-
     time_t now;
     struct tm *tm;
     struct timeval tv;
@@ -34,8 +33,14 @@ void render_clock(font* timer_font, struct camera global_camera){
     sprintf(out_hours_minutes, "%01d:%02d", tm->tm_min%10, tm->tm_sec);
     sprintf(out_seconds, ":%02d", (int) (tv.tv_usec / 1000) % 100);
 
+    float temp_scale = timer_font->scale_y; 
+    float temp_scale_x = timer_font->scale_x; 
     render_font(timer_font, out_hours_minutes, x, y, 0.0008*0.9, CLOCK_TEXT_COLOR, global_camera);
+    timer_font->scale_y *= 1.5; 
+    timer_font->scale_x *= 1.05; 
     render_font(timer_font, out_seconds, x + 1.27, y, 0.0004*0.9, CLOCK_TEXT_COLOR, global_camera);
+    timer_font->scale_y = temp_scale; 
+    timer_font->scale_x = temp_scale_x; 
 }
 
 float* generate_gradient(int color_count, float (*arr)[3], int* length){
@@ -109,4 +114,14 @@ void draw_slant(struct entity* quad, float line_x, float line_y, float height, f
     // glm_rotate(vec4 *m, float angle, float *axis)
     // glm_translate(quad->model, (vec3){line_x + width/2, line_y + height/2, 0.0f});
     quad->render(quad);
+}
+
+void draw_box(struct entity* quad, float box_x, float box_y, float width, float height, float thickness){
+    draw_line(quad, box_x, box_y, width + 2 * thickness, thickness); 
+    
+    draw_line(quad, box_x, box_y + height + thickness, width + 2 * thickness, thickness); 
+    
+    draw_line(quad, box_x, box_y, thickness, height + 2 * thickness); 
+    
+    draw_line(quad, box_x + width + thickness, box_y, thickness, height + 2 * thickness); 
 }

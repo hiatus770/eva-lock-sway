@@ -1,2 +1,6 @@
 *.otf
 *.ttf
+.zed
+.vscode
+.ropeproject
+.clangd
