@@ -8,6 +8,7 @@
 #include <assert.h>
 #include "../include/globals.h"
 #include "../include/logger.h"
+#include "files.h"
 
 /**
 * Gets the file name extension without the . included, used for determing if its a vertex or fragment shader
@@ -65,13 +66,8 @@ void set_mat4(struct shader* shader, const char* name, mat4 value){
 
 void init_shader(struct shader* shader, const char* vertex_path, const char* fragment_path){
     // psuedo constructor for the shader
-    char vertex_path_full[200] = PROJECT_DIRECTORY;
-    char fragment_path_full[200] = PROJECT_DIRECTORY;
-    strcat(vertex_path_full, "/src");
-    strcat(fragment_path_full, "/src");
-
-    strcat(vertex_path_full, vertex_path);
-    strcat(fragment_path_full, fragment_path);
+    char* vertex_path_full = get_shader_path(vertex_path); 
+    char* fragment_path_full = get_shader_path(fragment_path); 
 
     ifd
     log_debug("FILE PATHS IN FULL\n %s \n %s\n", vertex_path_full, fragment_path_full);

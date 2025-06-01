@@ -6,7 +6,7 @@
 #include "../include/logger.h"
 #include <stdlib.h>
 
-char* get_path(char* dir){
+char* get_path(const char* dir){
     char* path = malloc(300 * sizeof(char));
     sprintf(path, PROJECT_DIRECTORY);
     strcat(path, "/");
@@ -19,7 +19,7 @@ char* get_path(char* dir){
     return path;
 }
 
-char* get_shader_path(char* dir){
+char* get_shader_path(const char* dir){
     // For this one we just concatenate with the other string but inside of src/shaders/
     char* path = malloc(300 * sizeof(char));
     path[0] = '\0';
@@ -28,7 +28,7 @@ char* get_shader_path(char* dir){
     return get_path(path);
 }
 
-char* get_texture_path(char* dir){
+char* get_texture_path(const char* dir){
     char* path = malloc(300 * sizeof(char));
     path[0] = '\0';
     strcat(path, "assets/textures/");
@@ -36,7 +36,7 @@ char* get_texture_path(char* dir){
     return get_path(path);
 }
 
-char* get_font_path(char* dir){
+char* get_font_path(const char* dir){
     char* path = malloc(300 * sizeof(char));
     path[0] = '\0';
     strcat(path, "assets/fonts/");
