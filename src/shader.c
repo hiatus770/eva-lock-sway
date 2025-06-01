@@ -67,13 +67,14 @@ void init_shader(struct shader* shader, const char* vertex_path, const char* fra
     // psuedo constructor for the shader
     char vertex_path_full[200] = PROJECT_DIRECTORY;
     char fragment_path_full[200] = PROJECT_DIRECTORY;
+    strcat(vertex_path_full, "/src");
+    strcat(fragment_path_full, "/src");
 
     strcat(vertex_path_full, vertex_path);
     strcat(fragment_path_full, fragment_path);
 
     ifd
     log_debug("FILE PATHS IN FULL\n %s \n %s\n", vertex_path_full, fragment_path_full);
-
 
     unsigned int vertex, fragment;
     vertex = compile(vertex_path_full);

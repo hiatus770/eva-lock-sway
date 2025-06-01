@@ -1,6 +1,6 @@
 #pragma once
 
-#define PROJECT_DIRECTORY "/home/hiatus/Documents/waylandplaying/src"
+#define PROJECT_DIRECTORY "/home/hiatus/Documents/waylandplaying"
 #define DEBUG true
 #define ifd if(DEBUG)
 

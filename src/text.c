@@ -4,6 +4,7 @@
 #include "freetype/freetype.h"
 #include "../include/graphics/graphics.h"
 #include "../include/graphics/camera.h"
+#include "../include/files.h"
 
 void init_font(font* font, struct shader* f_shader, char* font_otf, char* goal_source, int pixel_size, float scale_x, float scale_y){
     font->pixel_size = pixel_size;
@@ -24,7 +25,8 @@ void init_font(font* font, struct shader* f_shader, char* font_otf, char* goal_s
     // unbind
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
+    
+    font_otf = get_font_path(font_otf); 
     log_debug("Making font %s", font_otf);
 
     FT_Library ft;

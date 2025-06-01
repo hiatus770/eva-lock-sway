@@ -38,7 +38,7 @@ struct entity test_entity_2;
 struct entity main_gradient;
 struct entity main_panel;
 struct entity main_border;
-struct entity slant; 
+struct entity slant;
 struct entity border_1; // rendered once
 struct entity border_2; // rendered once
 struct entity border_bottom;  // rendered several times
@@ -116,6 +116,7 @@ float red_quad[] = {
 };
 
 
+void enableGLDebug();
 
 // Main render function of the program
 void render(struct client_state *state){
@@ -147,7 +148,7 @@ void render(struct client_state *state){
     float x_top_left = -0.75, y_top_left = 0.49;
     render_clock(&clock_bloom, global_camera);
     // Active time remaining
-    render_font(&helvetica_bloom, active_time, x_top_left + 0.80, y_top_left-0.04, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera); 
+    render_font(&helvetica_bloom, active_time, x_top_left + 0.80, y_top_left-0.04, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera);
 
     // // Code for text top left of clock
     render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
@@ -172,39 +173,39 @@ void render(struct client_state *state){
 
     temp_h = 0.77;
     draw_line(&main_border, cur_x, cur_y, temp_h, line_w);
-    cur_x += temp_h; 
+    cur_x += temp_h;
 
-    draw_slant(&slant, cur_x, cur_y, line_w, cur_x+0.06f*1.2, cur_y-0.11f*1.2); 
-    cur_x += 0.06f*1.2; 
+    draw_slant(&slant, cur_x, cur_y, line_w, cur_x+0.06f*1.2, cur_y-0.11f*1.2);
+    cur_x += 0.06f*1.2;
     cur_y -= 0.11f*1.2;
-    
-    temp_h = 2.0; 
+
+    temp_h = 2.0;
     draw_line(&main_border, cur_x, cur_y, 1.96 - cur_x, line_w);
-    cur_x = 1.96; 
-    
-    temp_h = 1.24; 
-    draw_line(&main_border, cur_x, cur_y - temp_h, line_w, temp_h+line_w); 
-    
+    cur_x = 1.96;
+
+    temp_h = 1.24;
+    draw_line(&main_border, cur_x, cur_y - temp_h, line_w, temp_h+line_w);
+
     // Box code
     // INTERNAL
-    draw_box(&main_border, 1.2, 0.15, 0.7, 0.32, line_w/2); 
-    draw_box(&main_border, 1.2, 0.15 - 0.15 - line_w*2, 0.7, 0.15, line_w/2); 
-    
-    
+    draw_box(&main_border, 1.2, 0.15, 0.7, 0.32, line_w/2);
+    draw_box(&main_border, 1.2, 0.15 - 0.15 - line_w*2, 0.7, 0.15, line_w/2);
+
+
     // Main energy supply system
     // draw_box(&main_border, )
-    
 
-    for(float i = -2.0f; i < 2.0f; i += 0.3333f){
-        for(float j = -2.0f; j < 2.0f; j += 0.33333f){
+
+    // for(float i = -2.0f; i < 2.0f; i += 0.3333f){
+        // for(float j = -2.0f; j < 2.0f; j += 0.33333f){
             // char* measure = malloc(50 * sizeof(char));
             // sprintf(measure, "x:%.6f", i);
             // render_font(&matisse_bloom, measure, i, j, 0.0004, (vec3){1.0, 1.0, 0.0}, global_camera);
             // sprintf(measure, "y:%.6f", j);
             // render_font(&matisse_bloom, measure, i, j + 0.1, 0.0004, CLOCK_TEXT_COLOR, global_camera);
             // free(measure);
-        }
-    }
+        // }
+    // }
 
     glActiveTexture(GL_TEXTURE0); // this line is needed for it to work, probably because without it the ping pong buffer has no clue what its doing the texturing on
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -319,78 +320,6 @@ uint32_t* utf8_to_codepoints(const char *s, size_t *out_len) {
 }
 
 
-
-// The callback signature
-void APIENTRY openglDebugCallback(GLenum source,
-                                  GLenum type,
-                                  GLuint id,
-                                  GLenum severity,
-                                  GLsizei length,
-                                  const GLchar *message,
-                                  const void *userParam)
-{
-    // Filter out non-significant messages if desired:
-    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
-
-    // Human-readable source
-    const char* srcStrings[] = {
-        "API", "Window System", "Shader Compiler",
-        "Third Party", "Application", "Other"
-    };
-    const char* src = "Unknown";
-    switch (source) {
-        case GL_DEBUG_SOURCE_API:             src = srcStrings[0]; break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   src = srcStrings[1]; break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: src = srcStrings[2]; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     src = srcStrings[3]; break;
-        case GL_DEBUG_SOURCE_APPLICATION:     src = srcStrings[4]; break;
-        case GL_DEBUG_SOURCE_OTHER:           src = srcStrings[5]; break;
-    }
-
-    // Human-readable type
-    const char* typeStrings[] = {
-        "Error", "Deprecated Behavior", "Undefined Behavior",
-        "Portability", "Performance", "Marker", "Other"
-    };
-    const char* typ = "Unknown";
-    switch (type) {
-        case GL_DEBUG_TYPE_ERROR:               typ = typeStrings[0]; break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typ = typeStrings[1]; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typ = typeStrings[2]; break;
-        case GL_DEBUG_TYPE_PORTABILITY:         typ = typeStrings[3]; break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         typ = typeStrings[4]; break;
-        case GL_DEBUG_TYPE_MARKER:              typ = typeStrings[5]; break;
-        case GL_DEBUG_TYPE_OTHER:               typ = typeStrings[6]; break;
-    }
-
-    // Human-readable severity
-    const char* sevStrings[] = {
-        "High", "Medium", "Low", "Notification"
-    };
-    const char* sev = "Unknown";
-    switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH:         sev = sevStrings[0]; break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       sev = sevStrings[1]; break;
-        case GL_DEBUG_SEVERITY_LOW:          sev = sevStrings[2]; break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: sev = sevStrings[3]; break;
-    }
-
-    fprintf(stderr,
-            "GL DEBUG: Source=%s, Type=%s, ID=%u, Severity=%s\n  Message: %s\n\n",
-            src, typ, id, sev, message);
-}
-
-// Call this once after your context is created and made current:
-void enableGLDebug() {
-    // Must be an OpenGL 4.3+ context or have KHR_debug
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes callback synchronous—good for debugging
-    glDebugMessageCallback(openglDebugCallback, NULL);
-    // Optionally, filter messages:
-    // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
-}
-
-
 void initgl(struct client_state *state){
     enableGLDebug();
     // REGULAR RENDERING CODE
@@ -398,9 +327,9 @@ void initgl(struct client_state *state){
     init_camera(&global_camera, temp_position);
 
     char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レースあと";
-    init_font(&matisse, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.0f);
-    init_font(&timer, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Digital-Display.ttf", goal, 300, 1.0f, 2.0f);
-    init_font(&helvetica, &text_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Helvetica.ttf", goal, 48*1.5, 1.0f, 1.0f);
+    init_font(&matisse, &text_shader, "matias.otf", goal, 48*2, 1.0f, 1.0f);
+    init_font(&timer, &text_shader, "Digital-Display.ttf", goal, 300, 1.0f, 2.0f);
+    init_font(&helvetica, &text_shader, "Helvetica.ttf", goal, 48*1.5, 1.0f, 1.0f);
 
     // float colors[][3] = {{0.745, 0.341, 0.254}, {0.67f, 0.792f, 0.301f}, {0.227, 0.5686, 0.2901}};
     float colors[][3] = {{0.54, 0.06, 0.03}, {0.45f, 0.74f, 0.06f}, {0.03, 0.27, 0.06}};
@@ -422,9 +351,9 @@ void initgl(struct client_state *state){
     init_shader(&gaussian, "/shaders/gaussian.vs", "/shaders/gaussian.fs"); // does ping pong gaussian blurring on the texture several times
     init_shader(&final, "/shaders/final.vs", "/shaders/final.fs"); // takes in two textures and combines them into one output
 
-    init_font(&matisse_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/matias.otf", goal, 48*2, 1.0f, 1.3f);
-    init_font(&clock_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
-    init_font(&helvetica_bloom, &b_shader, "/home/hiatus/Documents/waylandplaying/include/graphics/Helvetica.ttf", goal, 48*1, 1.0f, 1.0f);
+    init_font(&matisse_bloom, &b_shader, "matias.otf", goal, 48*2, 1.0f, 1.3f);
+    init_font(&clock_bloom, &b_shader, "7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
+    init_font(&helvetica_bloom, &b_shader, "Helvetica.ttf", goal, 48*1, 1.0f, 1.0f);
 
     // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, main_eva_gradient, length * sizeof(float), GL_TRIANGLES, "./textures/awesomeface.png");
     init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "./textures/awesomeface.png");
@@ -542,4 +471,74 @@ void render_quad()
     glBindVertexArray(quadVAO);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
     glBindVertexArray(0);
+}
+
+// The callback signature
+void APIENTRY openglDebugCallback(GLenum source,
+                                  GLenum type,
+                                  GLuint id,
+                                  GLenum severity,
+                                  GLsizei length,
+                                  const GLchar *message,
+                                  const void *userParam)
+{
+    // Filter out non-significant messages if desired:
+    if (severity == GL_DEBUG_SEVERITY_NOTIFICATION) return;
+
+    // Human-readable source
+    const char* srcStrings[] = {
+        "API", "Window System", "Shader Compiler",
+        "Third Party", "Application", "Other"
+    };
+    const char* src = "Unknown";
+    switch (source) {
+        case GL_DEBUG_SOURCE_API:             src = srcStrings[0]; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   src = srcStrings[1]; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: src = srcStrings[2]; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     src = srcStrings[3]; break;
+        case GL_DEBUG_SOURCE_APPLICATION:     src = srcStrings[4]; break;
+        case GL_DEBUG_SOURCE_OTHER:           src = srcStrings[5]; break;
+    }
+
+    // Human-readable type
+    const char* typeStrings[] = {
+        "Error", "Deprecated Behavior", "Undefined Behavior",
+        "Portability", "Performance", "Marker", "Other"
+    };
+    const char* typ = "Unknown";
+    switch (type) {
+        case GL_DEBUG_TYPE_ERROR:               typ = typeStrings[0]; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typ = typeStrings[1]; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typ = typeStrings[2]; break;
+        case GL_DEBUG_TYPE_PORTABILITY:         typ = typeStrings[3]; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         typ = typeStrings[4]; break;
+        case GL_DEBUG_TYPE_MARKER:              typ = typeStrings[5]; break;
+        case GL_DEBUG_TYPE_OTHER:               typ = typeStrings[6]; break;
+    }
+
+    // Human-readable severity
+    const char* sevStrings[] = {
+        "High", "Medium", "Low", "Notification"
+    };
+    const char* sev = "Unknown";
+    switch (severity) {
+        case GL_DEBUG_SEVERITY_HIGH:         sev = sevStrings[0]; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       sev = sevStrings[1]; break;
+        case GL_DEBUG_SEVERITY_LOW:          sev = sevStrings[2]; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: sev = sevStrings[3]; break;
+    }
+
+    fprintf(stderr,
+            "GL DEBUG: Source=%s, Type=%s, ID=%u, Severity=%s\n  Message: %s\n\n",
+            src, typ, id, sev, message);
+}
+
+// Call this once after your context is created and made current:
+void enableGLDebug() {
+    // Must be an OpenGL 4.3+ context or have KHR_debug
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS); // makes callback synchronous—good for debugging
+    glDebugMessageCallback(openglDebugCallback, NULL);
+    // Optionally, filter messages:
+    // glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 }
