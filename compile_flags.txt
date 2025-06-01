@@ -1,3 +1,4 @@
 -I/usr/lib/clang/19/include
 -I/usr/include
 -I/usr/local/include
+-I./include

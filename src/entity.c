@@ -1,4 +1,4 @@
-#include "entity.h"
+#include "../include/graphics/entity.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -8,21 +8,21 @@
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
-#include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
-#include "../client_state.h"
-#include "camera.h"
-#include "../logger.h"
-#include "shader.h"
+#include "../include/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
+#include "../include/client_state.h"
+#include "../include/graphics/camera.h"
+#include "../include/logger.h"
+#include "../include/graphics/shader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "../stb_image.h"
+#include "../include/stb_image.h"
 
 static int floats_per_vertex(enum LOAD_TYPE t){
     switch(t){
-        case VERTICES_COLOR: return 6; 
-        case VERTICES_COLOR_TEXTURE: return 8; 
-        case VERTICES: return 3; 
-        case VERTICES_TEXTURE: return 5; 
+        case VERTICES_COLOR: return 6;
+        case VERTICES_COLOR_TEXTURE: return 8;
+        case VERTICES: return 3;
+        case VERTICES_TEXTURE: return 5;
     }
 }
 
@@ -92,7 +92,7 @@ void init_entity(struct entity *entity, struct camera *camera, struct shader *sh
     if (entity->type == VERTICES_TEXTURE){
         // This needs another init func
     }
-    
+
     log_error("[%s] floats=%d fpv=%d verts=%d\n",
            (entity->type==VERTICES_COLOR?"gradient":"panel"),
            data_size / sizeof(float),
@@ -131,7 +131,7 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
     }
     if (entity->type == VERTICES_COLOR){
         // This is probably the most common thing we are going to be rendering
-        
+
     }
     if (entity->type == VERTICES_COLOR_TEXTURE){
         log_debug("\n\nTEXTURE BEING INITIALIZED WITH VAO AND VBO %d %d", entity->VAO, entity->VBO);
@@ -164,7 +164,7 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
         glEnableVertexAttribArray(2);
     }
     if (entity->type == VERTICES_TEXTURE){
-        // This is a single color 
+        // This is a single color
     }
     log_error("[%s] floats=%d fpv=%d verts=%d\n",
            (entity->type==VERTICES_COLOR?"gradient":"panel"),
@@ -172,6 +172,6 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
            floats_per_vertex(new_type),
            entity->vertices_length
     );
-    
+
     entity->render = &render_entity;
 }

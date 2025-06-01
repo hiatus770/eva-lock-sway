@@ -1,6 +1,6 @@
 #pragma once
 #include "../glad/glad.h"
-#include "../../src/globals.h"
+#include "../globals.h"
 #include <assert.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -11,7 +11,7 @@
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
-#include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
+#include "../xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
 #include "../client_state.h"
 #include "camera.h"
 #include "../logger.h"

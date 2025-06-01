@@ -1,5 +1,5 @@
-#include "map.h"
-#include "../logger.h"
+#include "../include/graphics/map.h"
+#include "../include/logger.h"
 
 #define TABLE_MAX_LOAD 0.75
 

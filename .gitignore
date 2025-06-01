@@ -4,3 +4,5 @@
 .vscode
 .ropeproject
 .clangd
+.gmon.out 
+deprecated-code

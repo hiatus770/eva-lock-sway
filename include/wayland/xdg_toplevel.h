@@ -6,7 +6,7 @@
 #include <EGL/egl.h>
 #include <wayland-egl.h>
 #include "../glad/glad.h"
-#include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
+#include "../xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
 #include "../client_state.h"
 
 static void xdg_toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, struct wl_array *states){

@@ -1,12 +1,12 @@
 #pragma once
-#include "../../src/globals.h"
+#include "../globals.h"
 #include <stdint.h>
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
-#include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
+#include "../xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
 #include "../client_state.h"
 #include "../cglm/cglm.h"
 #include "shader.h"

@@ -1,6 +1,6 @@
-#include "graphics.h"
-#include "../glad/glad.h"
-#include "../../src/globals.h"
+#include "../include/graphics/graphics.h"
+#include "../include/glad/glad.h"
+#include "../include/globals.h"
 #include <GL/gl.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -13,14 +13,14 @@
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
-#include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
-#include "../client_state.h"
-#include "eva.h"
-#include "map.h"
-#include "shader.h"
-#include "camera.h"
-#include "entity.h"
-#include "text.h"
+#include "../include/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
+#include "../include/client_state.h"
+#include "../include/eva.h"
+#include "../include/graphics/map.h"
+#include "../include/graphics/shader.h"
+#include "../include/graphics/camera.h"
+#include "../include/graphics/entity.h"
+#include "../include/graphics/text.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -47,7 +47,7 @@ struct entity border_bottom;  // rendered several times
 // Bloom related code
 unsigned int fbo;
 unsigned int pingpongFBO[2];
-unsigned int pingpongBuffer[2]; // This is the texture passed into each other
+unsigned int pingpongBuffer[2]; // This is the texture passed into each other1
 unsigned int colorBuffers[2];
 unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
@@ -124,9 +124,9 @@ void render(struct client_state *state){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     vec3 look_at_goal = {-0.5, 0.0, -1.0f};
-    // vec3 camera_position = {3.0f, 0.0, 4.0f};
-    // glm_vec3_copy(look_at_goal, global_camera.direction);
-    // glm_vec3_copy(camera_position, global_camera.position);
+    vec3 camera_position = {3.0f, 0.0, 4.0f};
+    glm_vec3_copy(look_at_goal, global_camera.direction);
+    glm_vec3_copy(camera_position, global_camera.position);
 
     // TODO make this call all the entity's render function in the program!
     char *goal = "活動限界まで内部主エネルギー供給システムやめるスロー正常レース";

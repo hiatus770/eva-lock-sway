@@ -6,7 +6,7 @@
 #include <EGL/egl.h>
 #include <GL/gl.h>
 #include <assert.h>
-#include "globals.h"
+#include "../include/globals.h"
 #include "../include/logger.h"
 
 /**

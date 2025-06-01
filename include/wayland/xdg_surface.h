@@ -11,7 +11,7 @@
 #include <EGL/egl.h>
 // Common imports needed to setup all the opengl goodies
 #include "../glad/glad.h"
-#include "../../src/xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
+#include "../xdg-shell-client-protocol.h" // TODO FIX THESE IMPORTS SO THEY AREN"T THIS UGLY!
 #include "../client_state.h"
 #include "../graphics/graphics.h"
 

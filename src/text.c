@@ -1,11 +1,9 @@
-#include "text.h"
-#include "../logger.h"
-#include "../glad/glad.h"
+#include "../include/graphics/text.h"
+#include "../include/logger.h"
+#include "../include/glad/glad.h"
 #include "freetype/freetype.h"
-#include "graphics.h"
-#include "camera.h"
-
-
+#include "../include/graphics/graphics.h"
+#include "../include/graphics/camera.h"
 
 void init_font(font* font, struct shader* f_shader, char* font_otf, char* goal_source, int pixel_size, float scale_x, float scale_y){
     font->pixel_size = pixel_size;

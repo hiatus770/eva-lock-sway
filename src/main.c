@@ -17,15 +17,15 @@
 // #include <GL/gl.h>
 // #include <glad/glad.h>
 #include "../include/glad/glad.h"
-#include "xdg-shell-client-protocol.h"
-#include "globals.h"
+#include "../include/xdg-shell-client-protocol.h"
+#include "../include/globals.h"
 #include "../include/graphics/shader.h" 
 #include <assert.h>
 
 /* Wayland Code */
 #include "../include/client_state.h" // Main client state used for the program
 #include "../include/wayland/wl_buffer.h" // Buffer listener
-#include "../include/wayland/xdg_surface.h" // Xdg surface listener struct used in the program
+#include "../include/wayland/xdg_surface.h"
 #include "../include/wayland/xdg_toplevel.h" // Top level application stuff handles closing and resizing
 #include "../include/wayland/wm_base.h" // Base wm
 #include "../include/wayland/wl_callback_listener.h"

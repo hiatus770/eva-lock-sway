@@ -1,6 +1,6 @@
-# please fix this awful makefile
-
+# Main makefile 
 CC=gcc
+# These are the dependencies for the project 
 CFLAGS=	-lwayland-client \
 		-lwayland-egl \
 		-lEGL \
@@ -12,25 +12,21 @@ CFLAGS=	-lwayland-client \
 		-I/usr/include/glib-2.0 \
 		-I/usr/lib/glib-2.0/include \
 		-I/usr/include/sysprof-6 \
-		-pthread -Wall \
-		-pg 
+		-pthread \
+		-pg \
+		-I ./include \
+		-lm
 
+# Finds all include files to be use din the project 
 include_files=$(wildcard ./include/* ./include/*/* ./src/*)
-c_files=./src/xdg-shell-protocol.c \
-		./include/graphics/text.c \
-		./include/graphics/entity.c \
-		./include/graphics/camera.c \
-		./include/graphics/graphics.c \
-		./include/graphics/map.c \
-		./include/graphics/eva.c \
-		./src/shader.c \
-		./src/xdg-shell-client-protocol.h \
-		./src/glad.c
+# Finds all files that the project is dependent on 
+dep_files=$(wildcard makefile ./include/* ./include/*/* ./src/* ./src/*/*)
+# Finds all the source files in the src folder 
+src_files=$(wildcard ./src/*.c) 
 
-build/main: ./src/main.c $(include_files)
+build/main: $(dep_files)
 	@echo "Making main c file"
-	gcc -o build/main -g ./src/main.c $(c_files) $(CFLAGS) -I ./include -lm
-
+	gcc -o build/main -g $(src_files) $(CFLAGS) 
 
 # deprecated and old :pensive: 
 # test: test.c xdg-shell-client-protocol.h xdg-shell-protocol.c memory.h shader.h shader.c glad.c

@@ -1,6 +1,6 @@
-#include "camera.h"
-#include "../client_state.h"
-#include "../../src/globals.h"
+#include "../include/graphics/camera.h"
+#include "../include/client_state.h"
+#include "../include/globals.h"
 
 extern struct client_state state;
 

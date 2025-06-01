@@ -9,7 +9,7 @@
 #include <wayland-egl.h>
 #include <EGL/egl.h>
 #include <string.h>
-#include "../../src/xdg-shell-client-protocol.h"
+#include "../xdg-shell-client-protocol.h"
 #include "wm_base.h" // Needed because in this file we use the wm_base in the last if statement in the handle global
 
 #include "../client_state.h"
