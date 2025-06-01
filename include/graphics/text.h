@@ -1,6 +1,6 @@
 #pragma once
 #include "map.h"
-#include "camera.h" 
+#include "camera.h"
 // This class exports the render_text function that handles all the different fonts etc etc
 
 typedef struct {
@@ -12,8 +12,10 @@ typedef struct {
     struct shader* font_shader;
 } font;
 
-void render_font(font* font, char* source, float x, float y, float scale, vec3 color, struct camera global_camera); 
+uint32_t* utf8_to_codepoints(const char *s, size_t *out_len);
+
+void render_font(font* font, char* source, float x, float y, float scale, vec3 color, struct camera global_camera);
 
 void init_font(font* font, struct shader* f_shader, char* font_otf, char* goal_source, int pixel_size, float scale_x, float scale_Y);
 
-void init_test_bloom(); 
+void init_test_bloom();

@@ -246,79 +246,6 @@ void render(struct client_state *state){
     eglSwapBuffers(state->egl_display, state->egl_surface);
 }
 
-/**
-* This function handles getting the codepoints given a utf-8 encoded string for functionality later in the program
-*/
-uint32_t* utf8_to_codepoints(const char *s, size_t *out_len) {
-    size_t cap = 16;
-    size_t len = 0;
-    uint32_t *codepoints = malloc(cap * sizeof *codepoints);
-    if (!codepoints) return NULL;
-
-    const unsigned char *p = (const unsigned char*)s;
-    while (*p) {
-        uint32_t cp;
-        size_t nbytes;
-
-        if (*p < 0x80) {
-            // 1‑byte sequence: 0xxxxxxx
-            cp = *p;
-            nbytes = 1;
-        }
-        else if ((p[0] & 0xE0) == 0xC0) {
-            // 2‑byte sequence: 110xxxxx 10xxxxxx
-            cp = p[0] & 0x1F;
-            nbytes = 2;
-        }
-        else if ((p[0] & 0xF0) == 0xE0) {
-            // 3‑byte sequence: 1110xxxx 10xxxxxx 10xxxxxx
-            cp = p[0] & 0x0F;
-            nbytes = 3;
-        }
-        else if ((p[0] & 0xF8) == 0xF0) {
-            // 4‑byte sequence: 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-            cp = p[0] & 0x07;
-            nbytes = 4;
-        }
-        else {
-            // invalid leading byte
-            free(codepoints);
-            *out_len = 0;
-            return NULL;
-        }
-
-        // Consume continuation bytes
-        for (size_t i = 1; i < nbytes; ++i) {
-            if ((p[i] & 0xC0) != 0x80) {
-                // invalid continuation byte
-                free(codepoints);
-                *out_len = 0;
-                return NULL;
-            }
-            cp = (cp << 6) | (p[i] & 0x3F);
-        }
-
-        // advance pointer
-        p += nbytes;
-
-        // append cp to array
-        if (len + 1 > cap) {
-            cap *= 2;
-            uint32_t *tmp = realloc(codepoints, cap * sizeof *tmp);
-            if (!tmp) {
-                free(codepoints);
-                *out_len = 0;
-                return NULL;
-            }
-            codepoints = tmp;
-        }
-        codepoints[len++] = cp;
-    }
-
-    *out_len = len;
-    return codepoints;
-}
-
 
 void initgl(struct client_state *state){
     enableGLDebug();
@@ -341,23 +268,21 @@ void initgl(struct client_state *state){
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    init_shader(&texture_shader, "/shaders/vertex_texture.vs", "/shaders/texture.fs"); // takes in two textures and combines them into one output
-    init_shader(&global_shader, "/shaders/vertex.vs", "/shaders/fragment.fs");
-    init_shader(&text_shader, "/shaders/text_vertex.vs", "/shaders/text_fragment.fs");
+    init_shader(&texture_shader, "vertex_texture.vs", "texture.fs"); // takes in two textures and combines them into one output
+    init_shader(&global_shader, "vertex.vs", "fragment.fs");
+    init_shader(&text_shader, "text_vertex.vs", "text_fragment.fs");
 
     // BLOOOM RELATED CODE
-    init_shader(&global_shader_bloom, "/shaders/vertex.vs", "/shaders/bloom_fragment.fs"); // takes in two textures and combines them into one output
-    init_shader(&b_shader, "/shaders/text_bloom.vs", "/shaders/text_bloom.fs"); // renders a text field only to be blurred
-    init_shader(&gaussian, "/shaders/gaussian.vs", "/shaders/gaussian.fs"); // does ping pong gaussian blurring on the texture several times
-    init_shader(&final, "/shaders/final.vs", "/shaders/final.fs"); // takes in two textures and combines them into one output
+    init_shader(&global_shader_bloom, "vertex.vs", "bloom_fragment.fs"); // takes in two textures and combines them into one output
+    init_shader(&b_shader, "text_bloom.vs", "text_bloom.fs"); // renders a text field only to be blurred
+    init_shader(&gaussian, "gaussian.vs", "gaussian.fs"); // does ping pong gaussian blurring on the texture several times
+    init_shader(&final, "final.vs", "final.fs"); // takes in two textures and combines them into one output
 
     init_font(&matisse_bloom, &b_shader, "matias.otf", goal, 48*2, 1.0f, 1.3f);
     init_font(&clock_bloom, &b_shader, "7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
     init_font(&helvetica_bloom, &b_shader, "Helvetica.ttf", goal, 48*1, 1.0f, 1.0f);
 
-    // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, main_eva_gradient, length * sizeof(float), GL_TRIANGLES, "./textures/awesomeface.png");
-    init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "./textures/awesomeface.png");
-    // init_entity(&main_gradient, &global_camera, &global_shader, VERTICES_COLOR, eva_gradient2, sizeof(eva_gradient2), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "clock_5.png");
     init_entity(&main_gradient, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&test_entity, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&test_entity_2, &global_camera, &global_shader_bloom, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static

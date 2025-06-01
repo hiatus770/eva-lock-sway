@@ -68,7 +68,6 @@ bool table_get(table* table, uint32_t key, struct character* ch){
 
 // Very basic growing algorithm
 int grow_capacity(int current_capacity){
-    log_debug("GROWING CAP");
     if (current_capacity == 0){
         current_capacity = 2;
     } else {
@@ -78,7 +77,6 @@ int grow_capacity(int current_capacity){
 }
 
 static void adjust_capacity(table* table, int capacity){
-    log_debug("ADJUSTING CAP");
     entry* entries = (entry*)calloc(capacity, sizeof(entry));
     for (int i = 0; i < capacity; i++){
         entries[i].key = 0;
@@ -87,7 +85,6 @@ static void adjust_capacity(table* table, int capacity){
     for (int i = 0; i < table->capacity; i++){
         entry *t_entry = &table->entries[i];
         if (t_entry->key == 0){
-            log_debug("Null key found");
             continue;
         }
         // Now we can actually move it along
