@@ -28,7 +28,6 @@ static int floats_per_vertex(enum LOAD_TYPE t){
 }
 
 void render_entity(struct entity *entity){
-
     if (entity->type == VERTICES_COLOR){
         entity->shader->use(entity->shader);
         entity->shader->set_mat4(entity->shader, "model", entity->model);
@@ -47,10 +46,24 @@ void render_entity(struct entity *entity){
         glBindTexture(GL_TEXTURE_2D, entity->texture);
         glBindVertexArray(entity->VAO);
         glDrawArrays(entity->gl_enum, 0, entity->vertices_length);
-    } else if (entity->type == VERTICES_COLOR){
-
+    } else if (entity->type == VERTICES_TEXTURE){
+        entity->shader->use(entity->shader);
+        entity->shader->set_mat4(entity->shader, "model", entity->model);
+        entity->shader->set_mat4(entity->shader, "projection", *entity->camera->get_projection_matrix(entity->camera));
+        entity->shader->set_mat4(entity->shader, "view", *entity->camera->get_view_matrix(entity->camera));
+        entity->shader->set_int(entity->shader, "tex", 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, entity->texture);
+        glBindVertexArray(entity->VAO);
+        glDrawArrays(entity->gl_enum, 0, entity->vertices_length);
     } else if (entity->type == VERTICES){
-
+        entity->shader->use(entity->shader);
+        entity->shader->set_mat4(entity->shader, "model", entity->model);
+        entity->shader->set_mat4(entity->shader, "projection", *entity->camera->get_projection_matrix(entity->camera));
+        entity->shader->set_mat4(entity->shader, "view", *entity->camera->get_view_matrix(entity->camera));
+        entity->shader->set_int(entity->shader, "tex", 0);
+        glBindVertexArray(entity->VAO);
+        glDrawArrays(entity->gl_enum, 0, entity->vertices_length);
     }
 }
 
@@ -62,7 +75,6 @@ void init_entity(struct entity *entity, struct camera *camera, struct shader *sh
     entity->vertices_length = data_size/(floats_per_vertex(entity->type) * sizeof(float)); // Data size should just be the sizeof call while vertices_length is that divided by sizeof(float)
     glm_mat4_identity(entity->model); // make sure to init to the identity matrix
 
-    // maybe i should port this to rust
     glGenVertexArrays(1, &entity->VAO);
     glBindVertexArray(entity->VAO);
 
@@ -76,6 +88,8 @@ void init_entity(struct entity *entity, struct camera *camera, struct shader *sh
     if (entity->type == VERTICES){
         // This is just the plain case with nothing nada zilch, we need a shader just for this since we might screw up the rendering if we try to use colors when we aren't, maybe have a fallback color!
         // TODO., also implement this haha
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
+        glEnableVertexAttribArray(0);
     }
     if (entity->type == VERTICES_COLOR){
         log_debug("\n\nBEING INITIALIZED WITH VAO AND VBO %d %d", entity->VAO, entity->VBO);
@@ -89,9 +103,12 @@ void init_entity(struct entity *entity, struct camera *camera, struct shader *sh
     if (entity->type == VERTICES_COLOR_TEXTURE){
         // this should never be called here
         log_error("WRONG INIT FUNCTION CALLED");
+        exit(1); 
     }
     if (entity->type == VERTICES_TEXTURE){
         // This needs another init func
+        log_error("WRONG INIT FUNCTION CALLED");
+        exit(1); 
     }
 
     log_error("[%s] floats=%d fpv=%d verts=%d\n",
@@ -127,12 +144,13 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
 
     // Now is where we have to be careful since the way we load depends on what we are doing, for now we will assume a few things about textures, colors etc
     if (entity->type == VERTICES){
-        // This is just the plain case with nothing nada zilch, we need a shader just for this since we might screw up the rendering if we try to use colors when we aren't, maybe have a fallback color!
-        // TODO., also implement this haha
+        log_error("Not supposed to be running this init if not a texture"); 
+        exit(1); 
     }
     if (entity->type == VERTICES_COLOR){
         // This is probably the most common thing we are going to be rendering
-
+        log_error("Not supposed to be running this init if not a texture"); 
+        exit(1); 
     }
     if (entity->type == VERTICES_COLOR_TEXTURE){
         log_debug("\n\nTEXTURE BEING INITIALIZED WITH VAO AND VBO %d %d", entity->VAO, entity->VBO);
@@ -167,8 +185,13 @@ void init_entity_texture(struct entity *entity, struct camera *camera, struct sh
     }
     if (entity->type == VERTICES_TEXTURE){
         // This is a single color
+        log_error("Not implemented yet"); 
+        
+        
+        
+        exit(1); 
     }
-    log_error("[%s] floats=%d fpv=%d verts=%d\n",
+    log_debug("[%s] floats=%d fpv=%d verts=%d\n",
            (entity->type==VERTICES_COLOR?"gradient":"panel"),
            data_size / sizeof(float),
            floats_per_vertex(new_type),

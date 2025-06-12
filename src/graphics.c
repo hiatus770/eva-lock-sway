@@ -38,11 +38,15 @@ struct entity test_entity_2;
 struct entity main_gradient;
 struct entity main_panel;
 struct entity main_border;
+struct entity black_box;
+struct entity red_box;
 struct entity slant;
+struct entity colorable_slant;
 struct entity border_1; // rendered once
 struct entity border_2; // rendered once
 struct entity border_bottom;  // rendered several times
-
+struct entity red_stripe;  // rendered several times
+struct entity blue_box;
 
 // Bloom related code
 unsigned int fbo;
@@ -54,9 +58,11 @@ unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 font matisse_bloom;
 struct shader b_shader;
 struct shader global_shader_bloom; // same as global shader but incorporates bloom effect into the object
+struct shader global_shader_bloom_mono; // same as global shader but incorporates bloom effect into the object but uses the mono color fragment shader
 struct shader gaussian;  /// Eventually adding more post processing effects!
 struct shader final; // combines several or more textures from the framebuffers into one final output
 struct shader texture_shader;
+struct shader texture_shader_bloom;
 
 // Main fonts used throughout
 font matisse;
@@ -64,6 +70,8 @@ font timer;
 font helvetica;
 font helvetica_bloom;
 font clock_bloom;
+
+float radius_global; 
 
 float eva_gradient[] = {
     // lowkey probably should figure out how to do this in blender and then import it :)
@@ -85,11 +93,9 @@ float eva_gradient2[] = {
     1.0f,  -1.0f, 0.0f,  0.0f, 0.0f, 1.0f    // top
 };
 
-
-
 float quad[] = {
     // positions          // colors           // texture coords
-     1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+     1.0f,  1.0f, 0.0f,   1.0f, 1.0f, 0.0f,   1.0f, 1.0f,   // top right
      1.0f, -1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 0.0f,   // bottom right
     -1.0f, -1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,   // bottom left
     -1.0f, -1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   0.0f, 0.0f,   // bottom left
@@ -97,6 +103,15 @@ float quad[] = {
     1.0f,  1.0f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f  // top right
 };
 
+float quad_vert[] = {
+    // positions          // colors           // texture coords
+     1.0f,  1.0f, 0.0f,   // top right
+     1.0f, -1.0f, 0.0f,   // bottom right
+    -1.0f, -1.0f, 0.0f,   // bottom left
+    -1.0f, -1.0f, 0.0f,   // bottom left
+    -1.0f,  1.0f, 0.0f,   // top left
+    1.0f,  1.0f, 0.0f,    // top right
+};
 float quad_color[] = {
     0.5f,  0.5f, 0.0f, CLOCK_COLOR_RAW   // top right
     0.5f, -0.5f, 0.0f, CLOCK_COLOR_RAW   // bottom right
@@ -106,7 +121,25 @@ float quad_color[] = {
     0.5f,  0.5f, 0.0f, CLOCK_COLOR_RAW
 };
 
-float red_quad[] = {
+float quad_color_black[] = {
+    0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,   // top right
+    0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f,   // bottom right
+   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+   -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+   -0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+    0.5f,  0.5f, 0.0f, 0.0f, 0.0f, 0.0f,
+};
+
+float blue_quad_vert[] = {
+    0.5f,  0.5f, 0.0f, BLUE_COLOR_RAW,   // top right
+    0.5f, -0.5f, 0.0f, BLUE_COLOR_RAW,   // bottom right
+   -0.5f, -0.5f, 0.0f, BLUE_COLOR_RAW,
+   -0.5f, -0.5f, 0.0f, BLUE_COLOR_RAW,
+   -0.5f,  0.5f, 0.0f, BLUE_COLOR_RAW,
+    0.5f,  0.5f, 0.0f, BLUE_COLOR_RAW
+};
+
+float red_quad_vert[] = {
     0.5f,  0.5f, 0.0f, GLOW_COLOR_RED_RAW   // top right
     0.5f, -0.5f, 0.0f, GLOW_COLOR_RED_RAW   // bottom right
    -0.5f, -0.5f, 0.0f, GLOW_COLOR_RED_RAW
@@ -115,6 +148,15 @@ float red_quad[] = {
     0.5f,  0.5f, 0.0f, GLOW_COLOR_RED_RAW
 };
 
+float red_quad[] = {
+    // positions          // colors           // texture coords
+     1.0f,  1.0f, 0.0f,   GLOW_COLOR_RED_RAW   1.0f, 1.0f,   // top right
+     1.0f, -1.0f, 0.0f,   GLOW_COLOR_RED_RAW   1.0f, 0.0f,   // bottom right
+    -1.0f, -1.0f, 0.0f,   GLOW_COLOR_RED_RAW   0.0f, 0.0f,   // bottom left
+    -1.0f, -1.0f, 0.0f,   GLOW_COLOR_RED_RAW   0.0f, 0.0f,   // bottom left
+    -1.0f,  1.0f, 0.0f,   GLOW_COLOR_RED_RAW   0.0f, 1.0f,    // top left
+    1.0f,  1.0f, 0.0f,   GLOW_COLOR_RED_RAW   1.0f, 1.0f  // top right
+};
 
 void enableGLDebug();
 
@@ -124,8 +166,8 @@ void render(struct client_state *state){
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    vec3 look_at_goal = {-0.5, 0.0, -1.0f};
-    vec3 camera_position = {3.0f, 0.0, 4.0f};
+    vec3 look_at_goal = {-0.5, -0.00, -1.0f};
+    vec3 camera_position = {1.5f, 0.0, 3.0f};
     glm_vec3_copy(look_at_goal, global_camera.direction);
     glm_vec3_copy(camera_position, global_camera.position);
 
@@ -141,24 +183,49 @@ void render(struct client_state *state){
     glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    float stripe_x = 1.82, stripe_y = 0.30;
+    glm_mat4_identity(red_stripe.model);
+    glm_scale(red_stripe.model, (vec3){0.5, 1.0f, 1.0f});
+    glm_scale(red_stripe.model, (vec3){0.15, 0.19f, 1.0f});
+    glm_translate(red_stripe.model, (vec3){stripe_x/(0.5 * 0.15), stripe_y/(0.19), -0.00001f});
+
+    red_stripe.render(&red_stripe);
     main_gradient.render(&main_gradient); // maps to texture 0  -- no bloom
     main_panel.render(&main_panel);
 
     // Code for rendering the clock
     float x_top_left = -0.75, y_top_left = 0.49;
     render_clock(&clock_bloom, global_camera);
+
     // Active time remaining
     render_font(&helvetica_bloom, active_time, x_top_left + 0.80, y_top_left-0.04, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera);
 
-    // // Code for text top left of clock
+    // Code for text top left of clock
     render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
     render_font(&matisse_bloom, top_left_secondary, x_top_left, y_top_left - 0.16, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
     // test_entity_2.render(&test_entity_2); // maps to texture 0  -- no bloom
 
+    // Internal and other 2 characters
+    matisse_bloom.scale_x *= 1.10;
+    render_font(&matisse_bloom, "内部" , stripe_x - 0.6, stripe_y - 0.06, 0.005/2.1, CLOCK_TEXT_COLOR, global_camera);
+    matisse_bloom.scale_x /= 1.10;
+    render_font(&helvetica_bloom, "INTERNAL" , stripe_x - 0.6, stripe_y - 0.17, 0.005/2.5, CLOCK_TEXT_COLOR, global_camera);
+
+    // Main energy supply system font is rendered here
+    render_font(&matisse_bloom, "主電源供給システム" , stripe_x - 0.6, stripe_y - 0.34, 0.005/5, CLOCK_TEXT_COLOR, global_camera);
+    helvetica_bloom.scale_x *= 0.80;
+    render_font(&helvetica_bloom, "MAINENERGY SUPPLY SYSTEM" , stripe_x - 0.6, stripe_y - 0.4, 0.005/4.5, CLOCK_TEXT_COLOR, global_camera);
+    helvetica_bloom.scale_x /= 0.80;
+
     // Code for the main border
+    float b_w = 0.01; float b_h = 0.02;
     float bl_x = -0.56f, bl_y = -0.7f;
     float line_w = 0.02f;
     draw_line(&main_border, bl_x, bl_y, 2.52f, line_w);
+    draw_line(&blue_box, bl_x - 0.04, bl_y + 0.03, b_w, b_h);
+    draw_line(&blue_box, bl_x - 0.20, bl_y + 0.03, b_w, b_h);
+    draw_line(&blue_box, bl_x - 0.04, bl_y + 0.85, b_w, b_h);
+    draw_line(&blue_box, bl_x - 0.20, bl_y + 0.85, b_w, b_h);
     float l_h = 0.9f;
     draw_line(&main_border, bl_x, bl_y, line_w, l_h);
     float l_w = 0.22f;
@@ -179,6 +246,10 @@ void render(struct client_state *state){
     cur_x += 0.06f*1.2;
     cur_y -= 0.11f*1.2;
 
+    // colorable_slant.shader->use(colorable_slant.shader);
+    // glUniform3f(glGetUniformLocation(colorable_slant.shader->ID, "color"), BLUE_COLOR_RAW);
+    // colorable_slant.render(&colorable_slant);
+
     temp_h = 2.0;
     draw_line(&main_border, cur_x, cur_y, 1.96 - cur_x, line_w);
     cur_x = 1.96;
@@ -187,25 +258,64 @@ void render(struct client_state *state){
     draw_line(&main_border, cur_x, cur_y - temp_h, line_w, temp_h+line_w);
 
     // Box code
-    // INTERNAL
-    draw_box(&main_border, 1.2, 0.15, 0.7, 0.32, line_w/2);
-    draw_box(&main_border, 1.2, 0.15 - 0.15 - line_w*2, 0.7, 0.15, line_w/2);
+    // INTERNAL + main power supply system boxes
+    draw_box(&main_border, 1.2, 0.1, 0.7, 0.4, line_w/2);
+    draw_box(&main_border, 1.2, 0.1 - 0.20 - line_w*2, 0.7, 0.20, line_w/2);
+    draw_line(&blue_box, 1.2 - 0.02, 0.1 - 0.00, b_w, b_h);
+    draw_line(&blue_box, 1.2 - 0.02 + 0.7 + 0.02 + 0.02, 0.1 - 0.00, b_w, b_h);
+    draw_line(&blue_box, 1.2 - 0.02, 0.1 - 0.00 + 0.4, b_w, b_h);
+    draw_line(&blue_box, 1.2 - 0.02 + 0.7 + 0.02 + 0.02, 0.1 - 0.00 + 0.4, b_w, b_h);
+   
+    float gap_between_dots = 0.3; 
+    for (float x = -2.0f; x <= 2.0f; x+=gap_between_dots){
+        draw_line(&blue_box, x, 1.12f, b_w, b_h);
+        draw_line(&blue_box, x + 0.03, 1.12f, b_w, b_h);
+        draw_line(&black_box, x + 0.03, 1.08f, b_w, b_h);
+    }
+    
+    
+    for (float y = -1.0f; y <= 1.0f; y+=gap_between_dots){
+        draw_line(&blue_box, -2.1f, y, b_w, b_h);
+        draw_line(&black_box, -1.96f, y, b_w, b_h);
+    }
+    
 
+    // Box code for STOP, SLOW, NORMAL, and RACING
+    float box_x = -0.4f; float box_y = -0.95f;
+    float box_stop = 0.25, box_height = 0.18;
+    float box_slow = 0.25;
+    float box_normal = 0.36;
+    float box_racing = 0.35;
+    float gap = 0.08;
+    float tx_height = 0.06;
+    float font_scale = 0.005/3;
+    draw_box(&main_border, box_x, box_y, box_stop, box_height, line_w/2);
+    draw_line(&black_box, box_x, box_y, box_stop + line_w/2, box_height + line_w/2);
+    render_font(&helvetica_bloom, "STOP" , box_x + line_w, box_y + box_height- tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+    box_x += box_stop + gap;
+    draw_box(&main_border, box_x, box_y, box_slow, box_height, line_w/2);
+    draw_line(&black_box, box_x, box_y, box_slow + line_w/2, box_height + line_w/2);
+    render_font(&helvetica_bloom, "SLOW" , box_x + line_w, box_y + box_height- tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+    box_x += box_slow+ gap;
+    draw_box(&main_border, box_x, box_y, box_normal, box_height, line_w/2);
+    draw_line(&black_box, box_x, box_y, box_normal+ line_w/2, box_height + line_w/2);
+    render_font(&helvetica_bloom, "NORMAL" , box_x + line_w, box_y + box_height- tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+    box_x += box_normal + gap;
+    draw_box(&main_border, box_x, box_y, box_racing, box_height, line_w/2);
+    draw_line(&red_box, box_x, box_y, box_racing + line_w/2, box_height/2 + line_w/2);
+    draw_line(&black_box, box_x, box_y, box_racing + line_w/2, box_height + line_w/2);
+    render_font(&helvetica_bloom, "RACING" , box_x + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
 
-    // Main energy supply system
-    // draw_box(&main_border, )
-
-
-    // for(float i = -2.0f; i < 2.0f; i += 0.3333f){
-        // for(float j = -2.0f; j < 2.0f; j += 0.33333f){
+    for(float i = -2.0f; i < 2.0f; i += 0.3333f){
+        for(float j = -2.0f; j < 2.0f; j += 0.33333f){
             // char* measure = malloc(50 * sizeof(char));
             // sprintf(measure, "x:%.6f", i);
             // render_font(&matisse_bloom, measure, i, j, 0.0004, (vec3){1.0, 1.0, 0.0}, global_camera);
             // sprintf(measure, "y:%.6f", j);
             // render_font(&matisse_bloom, measure, i, j + 0.1, 0.0004, CLOCK_TEXT_COLOR, global_camera);
             // free(measure);
-        // }
-    // }
+        }
+    }
 
     glActiveTexture(GL_TEXTURE0); // this line is needed for it to work, probably because without it the ping pong buffer has no clue what its doing the texturing on
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -233,19 +343,30 @@ void render(struct client_state *state){
     final.use(&final);
     final.set_int(&final, "scene", 0);
     final.set_int(&final, "bloom", 1);
+    if (state->state == NORMAL){
+        radius_global = 0.0f; 
+        final.set_float(&final, "radius", radius_global); 
+    } else {
+        if (radius_global >= 5){
+            radius_global = 5; 
+        } else {
+            radius_global += 0.1; 
+            radius_global *= 4; 
+        }
+        final.set_float(&final, "radius", radius_global); 
+    }
+    
     glActiveTexture(GL_TEXTURE0); // Prepare to bind color buffer from our fbo to texture
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]); // take our original source
     // glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, pingpongBuffer[!horizontal]);
 
-
     final.use(&final);
     render_quad();
 
     eglSwapBuffers(state->egl_display, state->egl_surface);
 }
-
 
 void initgl(struct client_state *state){
     enableGLDebug();
@@ -268,12 +389,14 @@ void initgl(struct client_state *state){
     glEnable(GL_DEPTH_TEST);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+    init_shader(&texture_shader_bloom, "vertex_texture.vs", "texture_bloom.fs"); // takes in two textures and combines them into one output
     init_shader(&texture_shader, "vertex_texture.vs", "texture.fs"); // takes in two textures and combines them into one output
     init_shader(&global_shader, "vertex.vs", "fragment.fs");
     init_shader(&text_shader, "text_vertex.vs", "text_fragment.fs");
 
     // BLOOOM RELATED CODE
     init_shader(&global_shader_bloom, "vertex.vs", "bloom_fragment.fs"); // takes in two textures and combines them into one output
+    init_shader(&global_shader_bloom_mono, "vertex.vs", "bloom_fragment_mono.fs"); // takes in two textures and combines them into one output
     init_shader(&b_shader, "text_bloom.vs", "text_bloom.fs"); // renders a text field only to be blurred
     init_shader(&gaussian, "gaussian.vs", "gaussian.fs"); // does ping pong gaussian blurring on the texture several times
     init_shader(&final, "final.vs", "final.fs"); // takes in two textures and combines them into one output
@@ -282,18 +405,24 @@ void initgl(struct client_state *state){
     init_font(&clock_bloom, &b_shader, "7-segment-mono.otf", goal, 48*32, 0.6f, 1.1f);
     init_font(&helvetica_bloom, &b_shader, "Helvetica.ttf", goal, 48*1, 1.0f, 1.0f);
 
-    init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "clock_5.png");
+    init_entity_texture(&main_panel, &global_camera, &texture_shader_bloom, VERTICES_COLOR_TEXTURE, quad, sizeof(quad), GL_TRIANGLES, "clock_5.png");
+    init_entity_texture(&red_stripe, &global_camera, &texture_shader_bloom, VERTICES_COLOR_TEXTURE, red_quad, sizeof(red_quad), GL_TRIANGLES, "stripe.png");
+    // init_entity_texture(&main_panel, &global_camera, &texture_shader, VERTICES_COLOR_TEXTURE, red_quad, sizeof(red_quad), GL_TRIANGLES, "awesomeface.png");
     init_entity(&main_gradient, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&test_entity, &global_camera, &global_shader, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&test_entity_2, &global_camera, &global_shader_bloom, VERTICES_COLOR, main_eva_gradient, length * sizeof(float), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&main_border, &global_camera, &global_shader_bloom, VERTICES_COLOR, quad_color,  sizeof(quad_color), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    init_entity(&black_box, &global_camera, &global_shader_bloom, VERTICES_COLOR, quad_color_black,  sizeof(quad_color_black), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    init_entity(&red_box, &global_camera, &global_shader_bloom, VERTICES_COLOR, red_quad_vert,  sizeof(red_quad_vert), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    init_entity(&blue_box, &global_camera, &global_shader_bloom, VERTICES_COLOR, blue_quad_vert,  sizeof(blue_quad_vert), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
     init_entity(&slant, &global_camera, &global_shader_bloom, VERTICES_COLOR, quad_color,  sizeof(quad_color), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
+    init_entity(&colorable_slant, &global_camera, &global_shader_bloom_mono, VERTICES, quad_vert,  sizeof(quad_vert), GL_TRIANGLES); // ran into issue where initializing size is based on if u have the pointer or not to it, or if i is static
 
     glm_translate(main_gradient.model, (vec3){0.0, 0.0, -0.01});
-    glm_scale(main_gradient.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 0.01f});
-    glm_scale(main_panel.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 0.01f});
-    glm_translate(test_entity_2.model, (vec3){-1.0, 0.0, 1.0});
     glm_translate(main_panel.model, (vec3){0.0, 0.0, -0.001f});
+    glm_scale(main_gradient.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 1.0f});
+    glm_scale(main_panel.model, (vec3){2*1.0f, 2*1080.0f/1920.0f, 1.0f});
+    glm_translate(test_entity_2.model, (vec3){-1.0, 0.0, 1.0});
     glm_scale(test_entity_2.model, (vec3){0.2f, 0.2f, 0.01f});
 
     glGenFramebuffers(1, &fbo);

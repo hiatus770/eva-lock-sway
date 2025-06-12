@@ -11,6 +11,7 @@
 #include <string.h>
 #include "../xdg-shell-client-protocol.h"
 #include "wm_base.h" // Needed because in this file we use the wm_base in the last if statement in the handle global
+#include "wl_seat.h" // Needed because we use the seat listener in this file 
 
 #include "../client_state.h"
 
@@ -30,6 +31,11 @@ static void registry_handle_global(void *data, struct wl_registry *registry, uin
     if (strcmp(interface, xdg_wm_base_interface.name) == 0){
         state->xdg_wm_base = wl_registry_bind(registry, name, &xdg_wm_base_interface, 1);
         xdg_wm_base_add_listener(state->xdg_wm_base, &xdg_wm_base_listener, state);
+    }
+    
+    if (strcmp(interface, wl_seat_interface.name) == 0){
+        state->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface, 9); 
+        wl_seat_add_listener(state->wl_seat, &wl_seat_listener, state); 
     }
 }
 

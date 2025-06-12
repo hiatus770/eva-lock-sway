@@ -96,7 +96,6 @@ void draw_slant(struct entity* quad, float line_x, float line_y, float height, f
     // glm_translate(quad->model, (vec3){line_x, line_y, 0.0f});
     // glm_rotate_at(quad->model, (vec3){line_x, line_y, 0.0f}, angle, (vec3){0.0, 0.0, 1.0f});
     // glm_scale(quad->model, (vec3){length, width, 1.0f});
-    //
     float quad_color[] = {
         line_x_f,  line_y_f + height, 0.0f, CLOCK_COLOR_RAW   // top right
         line_x_f, line_y_f, 0.0f, CLOCK_COLOR_RAW   // bottom right
@@ -108,8 +107,6 @@ void draw_slant(struct entity* quad, float line_x, float line_y, float height, f
 
     glBindBuffer(GL_ARRAY_BUFFER, quad->VBO);
     glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(quad_color), quad_color);
-
-
 
     // glm_rotate(vec4 *m, float angle, float *axis)
     // glm_translate(quad->model, (vec3){line_x + width/2, line_y + height/2, 0.0f});
