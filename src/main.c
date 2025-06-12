@@ -19,7 +19,7 @@
 #include "../include/glad/glad.h"
 #include "../include/xdg-shell-client-protocol.h"
 #include "../include/globals.h"
-#include "../include/graphics/shader.h" 
+#include "../include/graphics/shader.h"
 #include <assert.h>
 
 /* Wayland Code */
@@ -61,6 +61,7 @@ void wayland_init(struct client_state *state){
 int main(int argc, char *argv[])
 {
     struct client_state state = {0};
+    state.state = NORMAL;
     // Handles all the wayland related initialization code
     wayland_init(&state);
     // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
