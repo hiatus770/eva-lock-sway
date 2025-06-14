@@ -1,11 +1,13 @@
 #pragma once
 
 #include <stdbool.h>
+#include <xkbcommon/xkbcommon.h> 
+#include <assert.h> 
 #include <stdio.h>
 #include <stdint.h>
 #include <EGL/egl.h>
-#include "wayland/pointer.h"
 #include "globals.h"
+#include "wayland/pointer_struct.h"
 
 struct client_state
 {
@@ -29,7 +31,9 @@ struct client_state
 
     // For pointer
     struct pointer_event pointer_event;
-
+    struct xkb_state *xkb_state; 
+    struct xkb_context *xkb_context; 
+    struct xkb_keymap *xkb_keymap; 
 
     int width, height;
     bool closed;

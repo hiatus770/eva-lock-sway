@@ -3,6 +3,7 @@ CC=gcc
 # These are the dependencies for the project
 CFLAGS=	-lwayland-client \
 		-lwayland-egl \
+		-lxkbcommon \
 		-lEGL \
 		-lGLESv2 \
 		-lfreetype \
@@ -12,10 +13,11 @@ CFLAGS=	-lwayland-client \
 		-I/usr/include/glib-2.0 \
 		-I/usr/lib/glib-2.0/include \
 		-I/usr/include/sysprof-6 \
+		-I/usr/include/xkbcommon \
 		-pthread \
 		-pg \
 		-I ./include \
-		-lm
+		-lm 
 
 # Finds all include files to be use din the project
 include_files=$(wildcard ./include/* ./include/*/* ./src/*)
@@ -30,6 +32,10 @@ build/main: $(dep_files)
 	@echo "Making main c file"
 	gcc -o build/main -g $(src_files) $(CFLAGS)
 
+build/prod: $(dep_files)
+	@echo "Making optimized main c file" 
+	gcc -o build/main_prod -g $(src_files) $(CFLAGS) -O3 
+	
 build/test: $(dep_files) $(src_files_test)
 	@echo "Making test binary"
 	gcc -o build/test -g $(src_files_test) $(filter-out %main.c, $(src_files)) $(CFLAGS)
