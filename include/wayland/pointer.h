@@ -1,14 +1,14 @@
 #pragma once
-
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "../client_state.h"
 #include <string.h>
 #include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 #include <wayland-client.h>
 #include <wayland-util.h>
+#include "../client_state.h"
+#include "pointer_struct.h"
 
 enum pointer_event_mask {
   POINTER_EVENT_ENTER = 1 << 0,
@@ -25,7 +25,7 @@ static void wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
                              uint32_t serial, struct wl_surface *surface,
                              wl_fixed_t surface_x, wl_fixed_t surface_y) {
   struct client_state *client_state = data;
-  client_state->pointer_event.event_maks |= POINTER_EVENT_ENTER;
+  client_state->pointer_event.event_mask |= POINTER_EVENT_ENTER;
   client_state->pointer_event.serial = serial;
   client_state->pointer_event.surface_x = surface_x,
   client_state->pointer_event.surface_y = surface_y;
@@ -55,7 +55,7 @@ static void wl_pointer_button(void *data, struct wl_pointer *wl_pointer,
   client_state->pointer_event.event_mask |= POINTER_EVENT_BUTTON;
   client_state->pointer_event.time = time;
   client_state->pointer_event.serial = serial;
-  client_state->pointer_event.btton = button;
+  client_state->pointer_event.button = button;
   client_state->pointer_event.button = button,
   client_state->pointer_event.state = state;
 }
@@ -80,8 +80,8 @@ static void wl_pointer_axis_stop(void *data, struct wl_pointer *wl_pointer,
                                  uint32_t time, uint32_t axis) {
   struct client_state *client_state = data;
   client_state->pointer_event.time = time;
-  client_state->pointer_event.even_mask |= POINTER_EVENT_AXIS_STOP;
-  client_state->pointer_event.axes[axis] = true;
+  client_state->pointer_event.event_mask |= POINTER_EVENT_AXIS_STOP;
+  client_state->pointer_event.axes[axis].valid = true;
 }
 
 static void wl_pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer,
@@ -92,19 +92,7 @@ static void wl_pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer,
   client_state->pointer_event.axes[axis].discrete = discrete;
 }
 
-struct pointer_event {
-  uint32_t event_mask;
-  wl_fixed_t surface_x, surface_y;
-  uint32_t button, state;
-  uint32_t time;
-  uint32_t serial;
-  struct {
-    bool valid;
-    wl_fixed_t value;
-    int32_t discrete;
-  } axes[2];
-  uint32_t axis_source;
-};
+
 static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer) {
   struct client_state *client_state = data;
   struct pointer_event *event = &client_state->pointer_event;
@@ -163,6 +151,16 @@ static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer) {
   memset(event, 0, sizeof(*event)); // so cool
 }
 
+static void wl_axis_value120(void *data, struct wl_pointer *wl_pointer, uint32_t axis, int32_t value120){
+    // Do nothing since we aren't using this functionality 
+    return; 
+}
+
+static void wl_axis_relative_direction(void *data, struct wl_pointer *wl_pointer, uint32_t axis, uint32_t direction){
+    return; // Also do nothing for this function since we don't use its functionality 
+}
+
+
 static const struct wl_pointer_listener wl_pointer_listener = {
     .enter = wl_pointer_enter,
     .leave = wl_pointer_leave,
@@ -172,5 +170,7 @@ static const struct wl_pointer_listener wl_pointer_listener = {
     .frame = wl_pointer_frame,
     .axis_source = wl_pointer_axis_source,
     .axis_stop = wl_pointer_axis_stop,
-    .axis_discrete = wl_pointer_axis_discrete
+    .axis_discrete = wl_pointer_axis_discrete,
+    .axis_value120 = wl_axis_value120, 
+    .axis_relative_direction = wl_axis_relative_direction 
 };

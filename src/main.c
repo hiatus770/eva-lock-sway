@@ -8,17 +8,26 @@
 #include <time.h>
 #include <unistd.h>
 // #include <math.h>
+
+// Wayland related imports 
 #include <wayland-client-core.h>
+#include <xkbcommon/xkbcommon.h> 
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
 #include <wayland-egl-core.h>
 #include <wayland-egl.h>
 #include <EGL/egl.h>
+
+
 // #include <GL/gl.h>
 // #include <glad/glad.h>
+
+// Graphics related imports 
 #include "../include/glad/glad.h"
 #include "../include/xdg-shell-client-protocol.h"
 #include "../include/globals.h"
+
+// Other imports 
 #include "../include/graphics/shader.h"
 #include <assert.h>
 
@@ -62,6 +71,8 @@ int main(int argc, char *argv[])
 {
     struct client_state state = {0};
     state.state = NORMAL;
+    state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);  // Get the main context, we dont have any goofy flags for us yet 
+    
     // Handles all the wayland related initialization code
     wayland_init(&state);
     // Creates the necessary EGL context and information, it will initailize the egl window and it can start the opengl context
