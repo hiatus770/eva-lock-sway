@@ -65,6 +65,8 @@ void wayland_init(struct client_state *state){
     state->xdg_toplevel = xdg_surface_get_toplevel(state->xdg_surface);
 
     xdg_toplevel_add_listener(state->xdg_toplevel, &xdg_toplevel_listener, state);
+    
+
 }
 
 int main(int argc, char *argv[])

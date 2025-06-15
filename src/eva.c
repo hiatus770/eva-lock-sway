@@ -31,8 +31,8 @@ void render_clock(font* timer_font, struct camera global_camera){
     char* out_hours_minutes = malloc(20 * sizeof(char));
     char* out_seconds = malloc(20 * sizeof(char));
     sprintf(out_hours_minutes, "%01d:%02d", tm->tm_hour%10, tm->tm_min);
-    // sprintf(out_seconds, ":%02d", (int) (tv.tv_usec / 1000) % 100);
-    sprintf(out_seconds, ":%02d", (int) tm->tm_sec); 
+    sprintf(out_seconds, ":%02d", (int) (tv.tv_usec / 1000) % 100);
+    // sprintf(out_seconds, ":%02d", (int) tm->tm_sec); 
     
     float temp_scale = timer_font->scale_y;
     float temp_scale_x = timer_font->scale_x;
