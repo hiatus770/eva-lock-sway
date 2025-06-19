@@ -8,6 +8,7 @@
 #include <EGL/egl.h>
 #include "globals.h"
 #include "wayland/pointer_struct.h"
+#include "ext-session-lock-v1-protocol.h"
 
 struct client_state
 {
@@ -29,6 +30,10 @@ struct client_state
     struct wl_pointer *wl_pointer;
     struct wl_touch *wl_touch;
 
+    // Locking
+    struct ext_session_lock_manager_v1 *ext_session_lock_manager_v1;
+    struct ext_session_lock_v1 *ext_session_lock_v1;
+
     // For pointer
     struct pointer_event pointer_event;
     struct xkb_state *xkb_state; 
@@ -36,6 +41,7 @@ struct client_state
     struct xkb_keymap *xkb_keymap; 
 
     int width, height;
+    int locked; // 1 == LOCKED, 0 == UNLOCKED / NOT LOCKED
     bool closed;
     clock_state state;
 

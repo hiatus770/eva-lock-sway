@@ -44,17 +44,24 @@ static void wl_keyboard_enter(void *data, struct wl_keyboard *wl_keyboard, uint3
 }
 
 static void wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state){
-    struct client_state *client_state = data; 
+    struct client_state *client_state = data;
     char buf[128]; 
     uint32_t keycode = key + 8; 
     xkb_keysym_t sym = xkb_state_key_get_one_sym(client_state->xkb_state, keycode); 
     xkb_keysym_get_name(sym,buf,sizeof(buf)); 
     
     const char *action = state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release"; 
-    fprintf(stderr, "key %s: sym: %-12s %d", action, buf, sym);
-   
+
+
+    fprintf(stderr, "key %s: sym: %-12s %d  |  ", action, buf, sym);
+
+
     xkb_state_key_get_utf8(client_state->xkb_state, keycode, buf, sizeof(buf)); 
     fprintf(stderr, "utf8: '%s'\n", buf); 
+    if (strcmp(buf, "a") == 0){
+        fprintf(stderr, "A hit: unlocking screen");
+        client_state->closed = true;
+    }
 }
 
 static void wl_keyboard_leave(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, struct wl_surface *surface){
