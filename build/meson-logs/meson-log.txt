@@ -1,0 +1,168 @@
+Build started at 2025-06-19T09:24:45.454820
+Main binary: /usr/bin/python
+Build Options: 
+Python system: Linux
+The Meson build system
+Version: 1.8.2
+Source dir: /home/hiatus/Documents/waylandplaying
+Build dir: /home/hiatus/Documents/waylandplaying/build
+Build type: native build
+Project name: waylandplaying
+Project version: 0.1.0
+C compiler for the host machine: cc (gcc 15.1.1 "cc (GCC) 15.1.1 20250425")
+C linker for the host machine: cc ld.bfd 2.44.0
+-----------
+Detecting archiver via: `gcc-ar --version` -> 0
+stdout:
+GNU ar (GNU Binutils) 2.44.0
+Copyright (C) 2025 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) any later version.
+This program has absolutely no warranty.
+-----------
+C compiler for the build machine: cc (gcc 15.1.1 "cc (GCC) 15.1.1 20250425")
+C linker for the build machine: cc ld.bfd 2.44.0
+-----------
+Detecting archiver via: `gcc-ar --version` -> 0
+stdout:
+GNU ar (GNU Binutils) 2.44.0
+Copyright (C) 2025 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) any later version.
+This program has absolutely no warranty.
+-----------
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Host machine cpu family: x86_64
+Host machine cpu: x86_64
+Target machine cpu family: x86_64
+Target machine cpu: x86_64
+Dependency wayland-client found: YES 1.23.1 (cached)
+Message: Found dependency: wayland-client
+Dependency wayland-egl found: YES 18.1.0 (cached)
+Message: Found dependency: wayland-egl
+Dependency egl found: YES 1.5 (cached)
+Message: Found dependency: egl
+Dependency glesv2 found: YES 3.2 (cached)
+Message: Found dependency: glesv2
+Dependency xkbcommon found: YES 1.10.0 (cached)
+Message: Found dependency: xkbcommon
+Dependency wayland-protocols found: YES 1.45 (cached)
+Message: Found dependency: wayland-protocols
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: YES (/usr/bin/pkg-config) 2.4.3
+Determining dependency 'freetype2' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion freetype2` -> 0
+stdout:
+26.2.20
+-----------
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --cflags freetype2` -> 0
+stdout:
+-I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -pthread
+-----------
+env[PKG_CONFIG_ALLOW_SYSTEM_LIBS]: 1
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs freetype2` -> 0
+stdout:
+-L/usr/lib -lfreetype
+-----------
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs freetype2` -> 0
+stdout:
+-lfreetype
+-----------
+Using cached run result:
+Code:
+ 
+        #include<stddef.h>
+        #include<stdio.h>
+        int main(void) {
+            printf("%ld\n", (long)(sizeof(void *)));
+            return 0;
+        }
+Args:
+ []
+Cached run returncode:
+ 0
+Cached run stdout:
+ 8
+
+Cached run stderr:
+ 
+Running compile:
+Working directory:  /home/hiatus/Documents/waylandplaying/build/meson-private/tmprt2oii7b
+Code:
+
+-----------
+Command line: `cc /home/hiatus/Documents/waylandplaying/build/meson-private/tmprt2oii7b/testfile.c -o /home/hiatus/Documents/waylandplaying/build/meson-private/tmprt2oii7b/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 --print-search-dirs` -> 0
+stdout:
+install: /usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/
+programs: =/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../../x86_64-pc-linux-gnu/bin/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../../x86_64-pc-linux-gnu/bin/
+libraries: =/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../../x86_64-pc-linux-gnu/lib/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../../x86_64-pc-linux-gnu/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../x86_64-pc-linux-gnu/15.1.1/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../../lib/:/lib/x86_64-pc-linux-gnu/15.1.1/:/lib/../lib/:/usr/lib/x86_64-pc-linux-gnu/15.1.1/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../../x86_64-pc-linux-gnu/lib/:/usr/lib/gcc/x86_64-pc-linux-gnu/15.1.1/../../../:/lib/:/usr/lib/
+-----------
+Run-time dependency freetype2 found: YES 26.2.20
+Message: Found dependency: freetype2
+Running compile:
+Working directory:  /home/hiatus/Documents/waylandplaying/build/meson-private/tmp70jzcngd
+Code:
+int main(void) { return 0; }
+
+-----------
+Command line: `cc /home/hiatus/Documents/waylandplaying/build/meson-private/tmp70jzcngd/testfile.c -o /home/hiatus/Documents/waylandplaying/build/meson-private/tmp70jzcngd/output.exe -D_FILE_OFFSET_BITS=64 -O0 -lm -Wl,--allow-shlib-undefined` -> 0
+Library m found: YES
+Running compile:
+Working directory:  /home/hiatus/Documents/waylandplaying/build/meson-private/tmpckzstalq
+Code:
+int main(void) { return 0; }
+
+-----------
+Command line: `cc /home/hiatus/Documents/waylandplaying/build/meson-private/tmpckzstalq/testfile.c -o /home/hiatus/Documents/waylandplaying/build/meson-private/tmpckzstalq/output.exe -D_FILE_OFFSET_BITS=64 -O0 -lrt -Wl,--allow-shlib-undefined` -> 0
+Library rt found: YES
+Running compile:
+Working directory:  /home/hiatus/Documents/waylandplaying/build/meson-private/tmp_nu646_j
+Code:
+int main(void) { return 0; }
+
+-----------
+Command line: `cc /home/hiatus/Documents/waylandplaying/build/meson-private/tmp_nu646_j/testfile.c -o /home/hiatus/Documents/waylandplaying/build/meson-private/tmp_nu646_j/output.exe -D_FILE_OFFSET_BITS=64 -O0 -ldl -Wl,--allow-shlib-undefined` -> 0
+Library dl found: YES
+Running compile:
+Working directory:  /home/hiatus/Documents/waylandplaying/build/meson-private/tmp_y4dlc78
+Code:
+int main(void) { return 0; }
+
+-----------
+Command line: `cc /home/hiatus/Documents/waylandplaying/build/meson-private/tmp_y4dlc78/testfile.c -o /home/hiatus/Documents/waylandplaying/build/meson-private/tmp_y4dlc78/output.exe -D_FILE_OFFSET_BITS=64 -O0 -lpthread -Wl,--allow-shlib-undefined` -> 0
+Library pthread found: YES
+Program wayland-scanner found: YES (/usr/bin/wayland-scanner)
+Dependency wayland-protocols found: YES 1.45 (cached)
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --variable=pkgdatadir wayland-protocols` -> 0
+stdout:
+//usr/share/wayland-protocols
+-----------
+Got pkg-config variable pkgdatadir : //usr/share/wayland-protocols
+Message: Adding source: src/main.c
+Message: Adding source: src/shader.c
+Message: Adding source: src/glad.c
+Message: Adding source: src/graphics.c
+Message: Adding source: src/camera.c
+Message: === Build Configuration ===
+Message: Dependencies found: 11
+Message: Source files: 6
+Build targets in project: 3
+
+Found ninja-1.12.1 at /usr/bin/ninja

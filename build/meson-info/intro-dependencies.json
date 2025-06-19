@@ -1,0 +1,135 @@
+[
+  {
+    "name": "wayland-client",
+    "type": "pkgconfig",
+    "version": "1.23.1",
+    "compile_args": [],
+    "link_args": [
+      "/usr/lib/libwayland-client.so"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": []
+  },
+  {
+    "name": "wayland-egl",
+    "type": "pkgconfig",
+    "version": "18.1.0",
+    "compile_args": [],
+    "link_args": [
+      "/usr/lib/libwayland-egl.so",
+      "/usr/lib/libwayland-client.so"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": []
+  },
+  {
+    "name": "egl",
+    "type": "pkgconfig",
+    "version": "1.5",
+    "compile_args": [],
+    "link_args": [
+      "/usr/lib/libEGL.so"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": []
+  },
+  {
+    "name": "glesv2",
+    "type": "pkgconfig",
+    "version": "3.2",
+    "compile_args": [],
+    "link_args": [
+      "/usr/lib/libGLESv2.so"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": []
+  },
+  {
+    "name": "xkbcommon",
+    "type": "pkgconfig",
+    "version": "1.10.0",
+    "compile_args": [],
+    "link_args": [
+      "/usr/lib/libxkbcommon.so"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": []
+  },
+  {
+    "name": "wayland-protocols",
+    "type": "pkgconfig",
+    "version": "1.45",
+    "compile_args": [],
+    "link_args": [],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": [
+      "wayland_protocols"
+    ]
+  },
+  {
+    "name": "freetype2",
+    "type": "pkgconfig",
+    "version": "26.2.20",
+    "compile_args": [
+      "-I/usr/include/freetype2",
+      "-I/usr/include/libpng16",
+      "-I/usr/include/harfbuzz",
+      "-I/usr/include/glib-2.0",
+      "-I/usr/lib/glib-2.0/include",
+      "-I/usr/include/sysprof-6",
+      "-pthread"
+    ],
+    "link_args": [
+      "/usr/lib/libfreetype.so"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": [
+      "dep"
+    ]
+  },
+  {
+    "name": "pthread",
+    "type": "library",
+    "version": "unknown",
+    "compile_args": [],
+    "link_args": [
+      "-lpthread"
+    ],
+    "include_directories": [],
+    "sources": [],
+    "extra_files": [],
+    "dependencies": [],
+    "depends": [],
+    "meson_variables": [
+      "lib_dep"
+    ]
+  }
+]

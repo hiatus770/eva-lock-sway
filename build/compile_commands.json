@@ -1,0 +1,38 @@
+[
+  {
+    "directory": "/home/hiatus/Documents/waylandplaying/build",
+    "command": "cc -Iwaylandplaying.p -I. -I.. -I../include -I../src -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -std=c99 -O0 -g -pthread -MD -MQ waylandplaying.p/meson-generated_.._xdg-shell-protocol.c.o -MF waylandplaying.p/meson-generated_.._xdg-shell-protocol.c.o.d -o waylandplaying.p/meson-generated_.._xdg-shell-protocol.c.o -c xdg-shell-protocol.c",
+    "file": "xdg-shell-protocol.c",
+    "output": "waylandplaying.p/meson-generated_.._xdg-shell-protocol.c.o"
+  },
+  {
+    "directory": "/home/hiatus/Documents/waylandplaying/build",
+    "command": "cc -Iwaylandplaying.p -I. -I.. -I../include -I../src -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -std=c99 -O0 -g -pthread -MD -MQ waylandplaying.p/src_main.c.o -MF waylandplaying.p/src_main.c.o.d -o waylandplaying.p/src_main.c.o -c ../src/main.c",
+    "file": "../src/main.c",
+    "output": "waylandplaying.p/src_main.c.o"
+  },
+  {
+    "directory": "/home/hiatus/Documents/waylandplaying/build",
+    "command": "cc -Iwaylandplaying.p -I. -I.. -I../include -I../src -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -std=c99 -O0 -g -pthread -MD -MQ waylandplaying.p/src_shader.c.o -MF waylandplaying.p/src_shader.c.o.d -o waylandplaying.p/src_shader.c.o -c ../src/shader.c",
+    "file": "../src/shader.c",
+    "output": "waylandplaying.p/src_shader.c.o"
+  },
+  {
+    "directory": "/home/hiatus/Documents/waylandplaying/build",
+    "command": "cc -Iwaylandplaying.p -I. -I.. -I../include -I../src -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -std=c99 -O0 -g -pthread -MD -MQ waylandplaying.p/src_glad.c.o -MF waylandplaying.p/src_glad.c.o.d -o waylandplaying.p/src_glad.c.o -c ../src/glad.c",
+    "file": "../src/glad.c",
+    "output": "waylandplaying.p/src_glad.c.o"
+  },
+  {
+    "directory": "/home/hiatus/Documents/waylandplaying/build",
+    "command": "cc -Iwaylandplaying.p -I. -I.. -I../include -I../src -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -std=c99 -O0 -g -pthread -MD -MQ waylandplaying.p/src_graphics.c.o -MF waylandplaying.p/src_graphics.c.o.d -o waylandplaying.p/src_graphics.c.o -c ../src/graphics.c",
+    "file": "../src/graphics.c",
+    "output": "waylandplaying.p/src_graphics.c.o"
+  },
+  {
+    "directory": "/home/hiatus/Documents/waylandplaying/build",
+    "command": "cc -Iwaylandplaying.p -I. -I.. -I../include -I../src -I/usr/include/freetype2 -I/usr/include/libpng16 -I/usr/include/harfbuzz -I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include -I/usr/include/sysprof-6 -fdiagnostics-color=always -D_FILE_OFFSET_BITS=64 -Wall -Winvalid-pch -Wextra -std=c99 -O0 -g -pthread -MD -MQ waylandplaying.p/src_camera.c.o -MF waylandplaying.p/src_camera.c.o.d -o waylandplaying.p/src_camera.c.o -c ../src/camera.c",
+    "file": "../src/camera.c",
+    "output": "waylandplaying.p/src_camera.c.o"
+  }
+]

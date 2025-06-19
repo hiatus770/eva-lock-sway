@@ -41,6 +41,14 @@ build/test: $(dep_files) $(src_files_test)
 	gcc -o build/test -g $(src_files_test) $(filter-out %main.c, $(src_files)) $(CFLAGS)
 
 
+install: install
+	@echo "Configuring project" 
+	chmod +x scripts/install.sh
+	./scripts/install.sh
+	@echo "Moved file to /usr/bin"
+	sudo mv build/main /usr/bin/evaclock
+	
+
 all: build/test build/main
 # deprecated and old :pensive:
 # test: test.c xdg-shell-client-protocol.h xdg-shell-protocol.c memory.h shader.h shader.c glad.c

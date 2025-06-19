@@ -39,11 +39,6 @@ static void registry_handle_global(void *data, struct wl_registry *registry, uin
         state->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface, 9); 
         wl_seat_add_listener(state->wl_seat, &wl_seat_listener, state); 
     }
-
-    if (strcmp(interface, ext_session_lock_manager_v1_interface.name) == 0){
-        // Interface: ext_session_lock_manager_v1, version 1, name 26
-        state->ext_session_lock_manager_v1 = wl_registry_bind(registry, name, &ext_session_lock_manager_v1_interface, 1); // idk what the actual version is will have to find out
-    }
 }
 
 static void registry_handle_global_remove(void *data, struct wl_registry *registry, uint32_t name){

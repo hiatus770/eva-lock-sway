@@ -1,0 +1,13 @@
+# ninja log v6
+2	830	1750339333311695501	waylandplaying.p/src_glad.c.o	b921a2582175bbb5
+3	387	1750339332867564303	waylandplaying.p/src_camera.c.o	64c1354f3090c43a
+2	268	1750339332749563751	waylandplaying.p/src_shader.c.o	64db94239c6ac41b
+21	81	1750339332561562871	waylandplaying.p/meson-generated_.._xdg-shell-protocol.c.o	64a7f9d686a17d84
+1	21	1750339332502562595	xdg-shell-protocol.c	caacf07bb762b1fb
+1	794	1750339485900278658	build.ninja	b1defd3cf98174a6
+1	64	1750339486009279166	waylandplaying.p/meson-generated_.._xdg-shell-protocol.c.o	db68fa5fba3bf861
+2	249	1750339486010730823	waylandplaying.p/src_shader.c.o	d923609278837a5f
+3	331	1750339486011279175	waylandplaying.p/src_camera.c.o	25c86a8de0f246b9
+2	431	1750339486010279170	waylandplaying.p/src_main.c.o	e27a9a2fc7ea5faf
+2	497	1750339486011241384	waylandplaying.p/src_graphics.c.o	4d760999e8d6f356
+2	993	1750339486010961561	waylandplaying.p/src_glad.c.o	e69ca5fc19f248e4

@@ -1,0 +1,10 @@
+{
+  "targets": {
+    "/home/hiatus/Documents/waylandplaying/build/waylandplaying": {
+      "destination": "{bindir}/waylandplaying",
+      "tag": "runtime",
+      "subproject": null,
+      "install_rpath": null
+    }
+  }
+}
