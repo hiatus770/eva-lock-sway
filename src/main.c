@@ -40,6 +40,7 @@
 #include "../include/wayland/wl_callback_listener.h"
 #include "../include/wayland/registry_handler.h"
 #include "../include/graphics/graphics.h"
+#include "../include/wayland/lock_manager.h"
 
 void wayland_init(struct client_state *state){
     state->width = 1920;
@@ -72,8 +73,9 @@ void wayland_init(struct client_state *state){
 int main(int argc, char *argv[])
 {
     struct client_state state = {0};
-    state.state = NORMAL;
-    state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);  // Get the main context, we dont have any goofy flags for us yet 
+    state.state = NORMAL; // this is for the eva clock state
+    state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);  // Get the main context, we dont have any goofy flags for us yet
+    state.locked = 0; // we haven't locked the screen yet
     
     // Handles all the wayland related initialization code
     wayland_init(&state);
@@ -89,7 +91,7 @@ int main(int argc, char *argv[])
     initgl(&state);
 
     // XDG Shell making the actual window
-    xdg_toplevel_set_title(state.xdg_toplevel, "CLIENT!");
+    xdg_toplevel_set_title(state.xdg_toplevel, "eva-lock");
     wl_surface_commit(state.wl_surface);
 
     struct wl_callback *cb = wl_surface_frame(state.wl_surface);
@@ -99,12 +101,18 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Failed to make EGL context current: %d\n", eglGetError());
     }
 
+    // Add the lock handlers
+    state.ext_session_lock_v1 = ext_session_lock_manager_v1_lock(state.ext_session_lock_manager_v1);
+    ext_session_lock_v1_add_listener(state.ext_session_lock_v1, &ext_session_lock_v1_listener, &state);
+
     while (wl_display_dispatch(state.wl_display) != -1)
     {
         if (state.closed){
             break; // This is only toggled when the compositor tells us to close, we do not close on our own yet!
         }
     }
+
+    ext_session_lock_v1_unlock_and_destroy(state.ext_session_lock_v1);
 
     eglDestroySurface(state.egl_display, state.egl_surface);
     eglDestroyContext(state.egl_display, state.egl_context);

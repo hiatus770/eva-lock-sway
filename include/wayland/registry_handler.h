@@ -11,7 +11,9 @@
 #include <string.h>
 #include "../xdg-shell-client-protocol.h"
 #include "wm_base.h" // Needed because in this file we use the wm_base in the last if statement in the handle global
-#include "wl_seat.h" // Needed because we use the seat listener in this file 
+#include "wl_seat.h" // Needed because we use the seat listener in this file
+#include "lock_manager.h"
+#include "../ext-session-lock-v1-protocol.h"
 
 #include "../client_state.h"
 
@@ -36,6 +38,11 @@ static void registry_handle_global(void *data, struct wl_registry *registry, uin
     if (strcmp(interface, wl_seat_interface.name) == 0){
         state->wl_seat = wl_registry_bind(registry, name, &wl_seat_interface, 9); 
         wl_seat_add_listener(state->wl_seat, &wl_seat_listener, state); 
+    }
+
+    if (strcmp(interface, ext_session_lock_manager_v1_interface.name) == 0){
+        // Interface: ext_session_lock_manager_v1, version 1, name 26
+        state->ext_session_lock_manager_v1 = wl_registry_bind(registry, name, &ext_session_lock_manager_v1_interface, 1); // idk what the actual version is will have to find out
     }
 }
 
