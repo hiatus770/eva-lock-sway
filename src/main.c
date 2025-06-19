@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
     initgl(&state);
 
     // XDG Shell making the actual window
-    xdg_toplevel_set_title(state.xdg_toplevel, "eva-lock");
+    xdg_toplevel_set_title(state.xdg_toplevel, "eva-clock");
     wl_surface_commit(state.wl_surface);
 
     struct wl_callback *cb = wl_surface_frame(state.wl_surface);
@@ -101,10 +101,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Failed to make EGL context current: %d\n", eglGetError());
     }
 
-    // Add the lock handlers
-    state.ext_session_lock_v1 = ext_session_lock_manager_v1_lock(state.ext_session_lock_manager_v1);
-    ext_session_lock_v1_add_listener(state.ext_session_lock_v1, &ext_session_lock_v1_listener, &state);
-
     while (wl_display_dispatch(state.wl_display) != -1)
     {
         if (state.closed){
@@ -112,7 +108,6 @@ int main(int argc, char *argv[])
         }
     }
 
-    ext_session_lock_v1_unlock_and_destroy(state.ext_session_lock_v1);
 
     eglDestroySurface(state.egl_display, state.egl_surface);
     eglDestroyContext(state.egl_display, state.egl_context);

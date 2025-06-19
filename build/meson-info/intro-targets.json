@@ -1,0 +1,160 @@
+[
+  {
+    "name": "xdg-shell-client-protocol.h",
+    "id": "xdg-shell-client-protocol.h@cus",
+    "type": "custom",
+    "defined_in": "/home/hiatus/Documents/waylandplaying/meson.build",
+    "filename": [
+      "/home/hiatus/Documents/waylandplaying/build/xdg-shell-client-protocol.h"
+    ],
+    "build_by_default": false,
+    "target_sources": [
+      {
+        "language": "unknown",
+        "compiler": [
+          "/usr/bin/wayland-scanner",
+          "client-header",
+          "@INPUT@",
+          "@OUTPUT@"
+        ],
+        "parameters": [],
+        "sources": [
+          "//usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
+        ],
+        "generated_sources": []
+      }
+    ],
+    "extra_files": [],
+    "subproject": null,
+    "dependencies": [],
+    "depends": [],
+    "installed": false
+  },
+  {
+    "name": "xdg-shell-protocol.c",
+    "id": "xdg-shell-protocol.c@cus",
+    "type": "custom",
+    "defined_in": "/home/hiatus/Documents/waylandplaying/meson.build",
+    "filename": [
+      "/home/hiatus/Documents/waylandplaying/build/xdg-shell-protocol.c"
+    ],
+    "build_by_default": false,
+    "target_sources": [
+      {
+        "language": "unknown",
+        "compiler": [
+          "/usr/bin/wayland-scanner",
+          "private-code",
+          "@INPUT@",
+          "@OUTPUT@"
+        ],
+        "parameters": [],
+        "sources": [
+          "//usr/share/wayland-protocols/stable/xdg-shell/xdg-shell.xml"
+        ],
+        "generated_sources": []
+      }
+    ],
+    "extra_files": [],
+    "subproject": null,
+    "dependencies": [],
+    "depends": [],
+    "installed": false
+  },
+  {
+    "name": "waylandplaying",
+    "id": "waylandplaying@exe",
+    "type": "executable",
+    "defined_in": "/home/hiatus/Documents/waylandplaying/meson.build",
+    "filename": [
+      "/home/hiatus/Documents/waylandplaying/build/waylandplaying"
+    ],
+    "build_by_default": true,
+    "target_sources": [
+      {
+        "language": "c",
+        "machine": "host",
+        "compiler": [
+          "cc"
+        ],
+        "parameters": [
+          "-I/home/hiatus/Documents/waylandplaying/build/waylandplaying.p",
+          "-I/home/hiatus/Documents/waylandplaying/build",
+          "-I/home/hiatus/Documents/waylandplaying",
+          "-I/home/hiatus/Documents/waylandplaying/include",
+          "-I/home/hiatus/Documents/waylandplaying/src",
+          "-I/usr/include/freetype2",
+          "-I/usr/include/libpng16",
+          "-I/usr/include/harfbuzz",
+          "-I/usr/include/glib-2.0",
+          "-I/usr/lib/glib-2.0/include",
+          "-I/usr/include/sysprof-6",
+          "-fdiagnostics-color=always",
+          "-D_FILE_OFFSET_BITS=64",
+          "-Wall",
+          "-Winvalid-pch",
+          "-Wextra",
+          "-std=c99",
+          "-O0",
+          "-g",
+          "-pthread"
+        ],
+        "sources": [
+          "/home/hiatus/Documents/waylandplaying/src/main.c",
+          "/home/hiatus/Documents/waylandplaying/src/shader.c",
+          "/home/hiatus/Documents/waylandplaying/src/glad.c",
+          "/home/hiatus/Documents/waylandplaying/src/graphics.c",
+          "/home/hiatus/Documents/waylandplaying/src/camera.c"
+        ],
+        "generated_sources": [
+          "/home/hiatus/Documents/waylandplaying/build/xdg-shell-protocol.c"
+        ],
+        "unity_sources": []
+      },
+      {
+        "linker": [
+          "cc"
+        ],
+        "parameters": [
+          "-Wl,--as-needed",
+          "-Wl,--no-undefined",
+          "-Wl,--start-group",
+          "-Wl,--start-group",
+          "/usr/lib/libwayland-client.so",
+          "/usr/lib/libwayland-egl.so",
+          "/usr/lib/libEGL.so",
+          "/usr/lib/libGLESv2.so",
+          "/usr/lib/libxkbcommon.so",
+          "/usr/lib/libfreetype.so",
+          "-lm",
+          "-lrt",
+          "-ldl",
+          "-lpthread",
+          "-Wl,--end-group",
+          "-Wl,--end-group"
+        ]
+      }
+    ],
+    "extra_files": [],
+    "subproject": null,
+    "dependencies": [
+      "wayland-client",
+      "wayland-egl",
+      "egl",
+      "glesv2",
+      "xkbcommon",
+      "wayland-protocols",
+      "freetype2",
+      "m",
+      "rt",
+      "dl",
+      "pthread"
+    ],
+    "depends": [],
+    "win_subsystem": "console",
+    "installed": true,
+    "install_filename": [
+      "/usr/local/bin/waylandplaying"
+    ]
+  }
+]

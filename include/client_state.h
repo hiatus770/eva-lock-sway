@@ -55,14 +55,3 @@ struct client_state
     struct wl_egl_window *egl_window;
     EGLDisplay egl_display;
 };
-
-struct eva_surface {
-    struct wl_surface *wl_surface; 
-    struct xdg_surface *xdg_surface; 
-    struct xdg_toplevel *xdg_toplevel;
-    EGLContext egl_context; 
-    EGLSurface egl_surface; 
-    struct wl_egl_window *egl_window; 
-    EGLDisplay egl_display; 
-    
-}; 
