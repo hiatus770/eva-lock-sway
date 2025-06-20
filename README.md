@@ -1,6 +1,6 @@
 # Eva clock
 
-This project is basically intended to be a clone of another evangelion clock screensaver but for MacOS 
+This project is basically intended to be a wayland clone of another evangelion clock screensaver (github.com/Wandmalfarbe/evangelion-clock-screensaver/blob/master/icon.svg) 
 
 ![image](https://github.com/user-attachments/assets/9bda6cf1-2e50-4230-9993-3b74e823b0f3)
 
