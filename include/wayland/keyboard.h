@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <client_state.h>
 #include <string.h>
+#include <pam_auth.h>
 
 static void wl_keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard, uint32_t format, int32_t fd, uint32_t size){
     struct client_state *client_state = data;
@@ -44,24 +45,49 @@ static void wl_keyboard_enter(void *data, struct wl_keyboard *wl_keyboard, uint3
     }
 }
 
-static void wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t state){
-    struct client_state *client_state = data;
-    char buf[128];
+static void wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t key_state){
+    struct client_state *cs = data;
     uint32_t keycode = key + 8;
-    xkb_keysym_t sym = xkb_state_key_get_one_sym(client_state->xkb_state, keycode);
-    xkb_keysym_get_name(sym,buf,sizeof(buf));
+    xkb_keysym_t sym = xkb_state_key_get_one_sym(cs->xkb_state, keycode);
 
-    const char *action = state == WL_KEYBOARD_KEY_STATE_PRESSED ? "press" : "release";
+    if (key_state != WL_KEYBOARD_KEY_STATE_PRESSED) return;
 
+    if (!(cs->mode & MODE_LOCK) || !cs->session_locked) {
+        // Non-lock mode: close on Escape
+        if (sym == XKB_KEY_Escape) cs->closed = true;
+        return;
+    }
 
-    fprintf(stderr, "key %s: sym: %-12s %d  |  ", action, buf, sym);
-
-
-    xkb_state_key_get_utf8(client_state->xkb_state, keycode, buf, sizeof(buf));
-    fprintf(stderr, "utf8: '%s'\n", buf);
-    if (strcmp(buf, "a") == 0){
-        fprintf(stderr, "A hit: unlocking screen");
-        client_state->closed = true;
+    if (sym == XKB_KEY_Return || sym == XKB_KEY_KP_Enter) {
+        cs->password[cs->password_len] = '\0';
+        int result = eva_authenticate(cs->password);
+        memset(cs->password, 0, sizeof(cs->password));
+        cs->password_len = 0;
+        cs->indicator_step = 0;
+        cs->indicator_visible = false;
+        if (result == 0) {
+            // Success: flash green, start countdown — unlock happens when it hits 0
+            cs->counting_down = true;
+            cs->countdown_timer = 2.0f;
+            cs->flash_r = 0.0f; cs->flash_g = 1.0f; cs->flash_b = 0.0f;
+            cs->flash_timer = 1.0f;
+        } else {
+            // Failure: flash red
+            cs->flash_r = 1.0f; cs->flash_g = 0.0f; cs->flash_b = 0.0f;
+            cs->flash_timer = 1.0f;
+        }
+    } else if (sym == XKB_KEY_BackSpace) {
+        if (cs->password_len > 0) {
+            cs->password[--cs->password_len] = '\0';
+            cs->indicator_visible = !cs->indicator_visible;
+        }
+    } else {
+        char buf[8] = {0};
+        xkb_state_key_get_utf8(cs->xkb_state, keycode, buf, sizeof(buf));
+        if (buf[0] >= 0x20 && cs->password_len < 255) {
+            cs->password[cs->password_len++] = buf[0];
+            cs->indicator_visible = !cs->indicator_visible;
+        }
     }
 }
 

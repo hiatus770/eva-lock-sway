@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #include "../include/logger.h"
 #include <sys/time.h>
@@ -11,37 +12,42 @@
 #include "../include/globals.h"
 #include "../include/graphics/entity.h"
 
-void render_clock(font* timer_font, struct camera global_camera){
-    time_t now;
-    struct tm *tm;
-    struct timeval tv;
-    now = time(0);
+void render_clock(font* timer_font, struct camera global_camera, float countdown_secs){
+    float x = -0.55f, y = -0.65f;
+    char* out_main = malloc(20 * sizeof(char));
+    char* out_seconds = malloc(20 * sizeof(char));
 
-    gettimeofday(&tv, NULL);
-
-    if ((tm = localtime (&now)) == NULL) {
-        log_error("Error extracting time stuff\n");
-        return;
+    if (countdown_secs >= 0.0f) {
+        int total_secs = (int)countdown_secs;
+        int mins = total_secs / 60;
+        int secs = total_secs % 60;
+        int cs   = (int)((countdown_secs - total_secs) * 100);
+        sprintf(out_main, "%d:%02d", mins, secs);
+        sprintf(out_seconds, ":%02d", cs);
+    } else {
+        time_t now;
+        struct tm *tm;
+        now = time(0);
+        if ((tm = localtime(&now)) == NULL) {
+            log_error("Error extracting time stuff\n");
+            free(out_main);
+            free(out_seconds);
+            return;
+        }
+        sprintf(out_main, "%01d:%02d", tm->tm_hour % 10, tm->tm_min);
+        sprintf(out_seconds, ":%02d", (int)tm->tm_sec);
     }
 
-    // printf("Current time: %02d:%02d:%02d", tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-    float x = -0.55f, y = -0.65f;
-
-    char* out_hours_minutes = malloc(20 * sizeof(char));
-    char* out_seconds = malloc(20 * sizeof(char));
-    sprintf(out_hours_minutes, "%01d:%02d", tm->tm_hour%10, tm->tm_min);
-    // sprintf(out_seconds, ":%02d", (int) (tv.tv_usec / 1000) % 100);
-    sprintf(out_seconds, ":%02d", (int) tm->tm_sec);
-
-    float temp_scale = timer_font->scale_y;
+    float temp_scale   = timer_font->scale_y;
     float temp_scale_x = timer_font->scale_x;
-    render_font(timer_font, out_hours_minutes, x, y, 0.0008*0.9, CLOCK_TEXT_COLOR, global_camera);
+    render_font(timer_font, out_main, x, y, 0.0008*0.9, CLOCK_TEXT_COLOR, global_camera);
     timer_font->scale_y *= 1.5;
     timer_font->scale_x *= 1.05;
     render_font(timer_font, out_seconds, x + 1.27, y, 0.0004*0.9, CLOCK_TEXT_COLOR, global_camera);
     timer_font->scale_y = temp_scale;
     timer_font->scale_x = temp_scale_x;
+    free(out_main);
+    free(out_seconds);
 }
 
 float* generate_gradient(int color_count, float (*arr)[3], int* length){

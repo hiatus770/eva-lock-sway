@@ -7,7 +7,9 @@ in vec3 pos;
 uniform sampler2D scene;
 uniform sampler2D bloom;
 
-uniform float radius = 1.0f;
+uniform float radius = 0.0f;
+uniform float flash_alpha = 0.0;
+uniform vec3  flash_color = vec3(1.0, 0.0, 0.0);
 
 vec3 ACESFilm(vec3 x)
 {
@@ -32,7 +34,11 @@ void main() {
     FragColor = vec4(result, 1.0);
     
     if (pos.x*pos.x + pos.y*pos.y < radius*radius){
-        FragColor = FragColor * vec4(1.0, 0.2, 0.1, 1.0);      
+        FragColor = FragColor * vec4(1.0, 0.2, 0.1, 1.0);
     }
-    
+
+    // Auth feedback flash overlay
+    if (flash_alpha > 0.0) {
+        FragColor = mix(FragColor, vec4(flash_color, 1.0), flash_alpha * 0.55);
+    }
 }

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <math.h>
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
@@ -183,26 +184,38 @@ void render(struct client_state *state){
     glViewport(0,0, SRC_WIDTH, SRC_HEIGHT);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    // Intense mode: independent flash toggles at different frequencies
+    bool flash_stripe     = (state->state == ALARM) && (fmodf(state->intense_time, 0.40f) < 0.20f);
+    bool flash_activetime = (state->state == ALARM) && (fmodf(state->intense_time, 0.70f) < 0.35f);
+    bool flash_jptext     = (state->state == ALARM) && (fmodf(state->intense_time, 1.10f) < 0.55f);
+
     float stripe_x = 1.82, stripe_y = 0.30;
     glm_mat4_identity(red_stripe.model);
     glm_scale(red_stripe.model, (vec3){0.5, 1.0f, 1.0f});
     glm_scale(red_stripe.model, (vec3){0.15, 0.19f, 1.0f});
     glm_translate(red_stripe.model, (vec3){stripe_x/(0.5 * 0.15), stripe_y/(0.19), -0.00001f});
 
-    red_stripe.render(&red_stripe);
-    main_gradient.render(&main_gradient); // maps to texture 0  -- no bloom
+    if (state->state != ALARM || flash_stripe) {
+        red_stripe.render(&red_stripe);
+    }
+    main_gradient.render(&main_gradient);
     main_panel.render(&main_panel);
 
-    // Code for rendering the clock
+    // Clock always renders; shows countdown when counting down, real time otherwise
     float x_top_left = -0.75, y_top_left = 0.49;
-    render_clock(&clock_bloom, global_camera);
+    float countdown_secs = state->counting_down ? state->countdown_timer : -1.0f;
+    render_clock(&clock_bloom, global_camera, countdown_secs);
 
-    // Active time remaining
-    render_font(&helvetica_bloom, active_time, x_top_left + 0.80, y_top_left-0.04, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera);
+    // "ACTIVE TIME REMAINING:" flashes independently
+    if (state->state != ALARM || flash_activetime) {
+        render_font(&helvetica_bloom, active_time, x_top_left + 0.80, y_top_left-0.04, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera);
+    }
 
-    // Code for text top left of clock
-    render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4) *1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
-    render_font(&matisse_bloom, top_left_secondary, x_top_left, y_top_left - 0.16, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera); // maps to texture 1 -- will get bloomed on
+    // Japanese text flashes independently
+    if (state->state != ALARM || flash_jptext) {
+        render_font(&matisse_bloom, top_left, x_top_left, y_top_left, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera);
+        render_font(&matisse_bloom, top_left_secondary, x_top_left, y_top_left - 0.16, (0.005/4)*1.08, CLOCK_TEXT_COLOR, global_camera);
+    }
     // test_entity_2.render(&test_entity_2); // maps to texture 0  -- no bloom
 
     // Internal and other 2 characters
@@ -280,7 +293,7 @@ void render(struct client_state *state){
     }
     
 
-    // Box code for STOP, SLOW, NORMAL, and RACING
+    // Box code for bottom row
     float box_x = -0.4f; float box_y = -0.95f;
     float box_stop = 0.25, box_height = 0.18;
     float box_slow = 0.25;
@@ -289,22 +302,57 @@ void render(struct client_state *state){
     float gap = 0.08;
     float tx_height = 0.06;
     float font_scale = 0.005/3;
-    draw_box(&main_border, box_x, box_y, box_stop, box_height, line_w/2);
-    draw_line(&black_box, box_x, box_y, box_stop + line_w/2, box_height + line_w/2);
-    render_font(&helvetica_bloom, "STOP" , box_x + line_w, box_y + box_height- tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
-    box_x += box_stop + gap;
-    draw_box(&main_border, box_x, box_y, box_slow, box_height, line_w/2);
-    draw_line(&black_box, box_x, box_y, box_slow + line_w/2, box_height + line_w/2);
-    render_font(&helvetica_bloom, "SLOW" , box_x + line_w, box_y + box_height- tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
-    box_x += box_slow+ gap;
-    draw_box(&main_border, box_x, box_y, box_normal, box_height, line_w/2);
-    draw_line(&black_box, box_x, box_y, box_normal+ line_w/2, box_height + line_w/2);
-    render_font(&helvetica_bloom, "NORMAL" , box_x + line_w, box_y + box_height- tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
-    box_x += box_normal + gap;
-    draw_box(&main_border, box_x, box_y, box_racing, box_height, line_w/2);
-    draw_line(&red_box, box_x, box_y, box_racing + line_w/2, box_height/2 + line_w/2);
-    draw_line(&black_box, box_x, box_y, box_racing + line_w/2, box_height + line_w/2);
-    render_font(&helvetica_bloom, "RACING" , box_x + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+
+    if (state->state == ALARM) {
+        // Intense mode: all 4 boxes outlined + black fill, only STOP gets red fill + label
+        float bx = box_x;
+        draw_box(&main_border, bx, box_y, box_stop, box_height, line_w/2);
+        draw_line(&black_box, bx, box_y, box_stop + line_w/2, box_height + line_w/2);
+        render_font(&helvetica_bloom, "STOP", bx + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+        bx += box_stop + gap;
+        draw_box(&main_border, bx, box_y, box_slow, box_height, line_w/2);
+        draw_line(&black_box, bx, box_y, box_slow + line_w/2, box_height + line_w/2);
+        bx += box_slow + gap;
+        draw_box(&main_border, bx, box_y, box_normal, box_height, line_w/2);
+        draw_line(&black_box, bx, box_y, box_normal + line_w/2, box_height + line_w/2);
+        bx += box_normal + gap;
+        draw_box(&main_border, bx, box_y, box_racing, box_height, line_w/2);
+        draw_line(&black_box, bx, box_y, box_racing + line_w/2, box_height + line_w/2);
+    } else {
+        float box_positions[4];
+        float box_widths[4] = {box_stop, box_slow, box_normal, box_racing};
+
+        box_positions[0] = box_x;
+        draw_box(&main_border, box_x, box_y, box_stop, box_height, line_w/2);
+        // Draw indicator BEFORE black fill — depth test (GL_LESS) means first draw wins
+        if ((state->mode & MODE_LOCK) && state->indicator_visible) {
+            draw_line(&red_box, box_x, box_y, box_stop + line_w/2, box_height/2 + line_w/2);
+        }
+        draw_line(&black_box, box_x, box_y, box_stop + line_w/2, box_height + line_w/2);
+        render_font(&helvetica_bloom, "STOP", box_x + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+        box_x += box_stop + gap;
+
+        box_positions[1] = box_x;
+        draw_box(&main_border, box_x, box_y, box_slow, box_height, line_w/2);
+        draw_line(&black_box, box_x, box_y, box_slow + line_w/2, box_height + line_w/2);
+        render_font(&helvetica_bloom, "SLOW", box_x + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+        box_x += box_slow + gap;
+
+        box_positions[2] = box_x;
+        draw_box(&main_border, box_x, box_y, box_normal, box_height, line_w/2);
+        draw_line(&black_box, box_x, box_y, box_normal + line_w/2, box_height + line_w/2);
+        render_font(&helvetica_bloom, "NORMAL", box_x + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+        box_x += box_normal + gap;
+
+        box_positions[3] = box_x;
+        draw_box(&main_border, box_x, box_y, box_racing, box_height, line_w/2);
+        // Red before black so it wins the depth test
+        if (!(state->mode & MODE_LOCK)) {
+            draw_line(&red_box, box_x, box_y, box_racing + line_w/2, box_height/2 + line_w/2);
+        }
+        draw_line(&black_box, box_x, box_y, box_racing + line_w/2, box_height + line_w/2);
+        render_font(&helvetica_bloom, "RACING", box_x + line_w, box_y + box_height - tx_height, font_scale, CLOCK_TEXT_COLOR, global_camera);
+    }
 
     for(float i = -2.0f; i < 2.0f; i += 0.3333f){
         for(float j = -2.0f; j < 2.0f; j += 0.33333f){
@@ -343,18 +391,18 @@ void render(struct client_state *state){
     final.use(&final);
     final.set_int(&final, "scene", 0);
     final.set_int(&final, "bloom", 1);
-    if (state->state == NORMAL){
-        radius_global = 0.0f; 
-        final.set_float(&final, "radius", radius_global); 
+    if (state->state == ALARM) {
+        state->intense_time += state->last_dt;
+        radius_global = 3.0f;
     } else {
-        if (radius_global >= 5){
-            radius_global = 5; 
-        } else {
-            radius_global += 0.1; 
-            radius_global *= 4; 
-        }
-        final.set_float(&final, "radius", radius_global); 
+        radius_global = 0.0f;
     }
+    final.set_float(&final, "radius", radius_global);
+
+    // Flash overlay (lock mode auth feedback)
+    final.set_float(&final, "flash_alpha", state->flash_timer);
+    glUniform3f(glGetUniformLocation(final.ID, "flash_color"),
+        state->flash_r, state->flash_g, state->flash_b);
     
     glActiveTexture(GL_TEXTURE0); // Prepare to bind color buffer from our fbo to texture
     glBindTexture(GL_TEXTURE_2D, colorBuffers[0]); // take our original source
@@ -379,8 +427,9 @@ void initgl(struct client_state *state){
     init_font(&timer, &text_shader, "Digital-Display.ttf", goal, 300, 1.0f, 2.0f);
     init_font(&helvetica, &text_shader, "Helvetica.ttf", goal, 48*1.5, 1.0f, 1.0f);
 
-    // float colors[][3] = {{0.745, 0.341, 0.254}, {0.67f, 0.792f, 0.301f}, {0.227, 0.5686, 0.2901}};
-    float colors[][3] = {{0.54, 0.06, 0.03}, {0.45f, 0.74f, 0.06f}, {0.03, 0.27, 0.06}};
+    float colors_normal[][3]  = {{0.54, 0.06, 0.03}, {0.45f, 0.74f, 0.06f}, {0.03, 0.27, 0.06}};
+    float colors_intense[][3] = {{0.72, 0.04, 0.02}, {0.55f, 0.12f, 0.04f}, {0.40, 0.06, 0.04}};
+    float (*colors)[3] = (state->mode & MODE_INTENSE) ? colors_intense : colors_normal;
 
     int length;
     float* main_eva_gradient = generate_gradient(3, colors, &length);
