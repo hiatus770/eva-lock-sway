@@ -85,6 +85,15 @@ struct client_state
     float last_dt;        // delta time in seconds, updated each frame
     float intense_time;   // accumulated time for vignette oscillation
 
+    // Orbit camera
+    float cam_yaw;          // actual (smoothed) horizontal angle
+    float cam_pitch;        // actual (smoothed) vertical angle
+    float cam_yaw_target;   // target set by mouse input
+    float cam_pitch_target;
+    double last_pointer_x;
+    double last_pointer_y;
+    bool pointer_valid;
+
     // Egl things
     EGLContext egl_context;
     EGLSurface egl_surface;

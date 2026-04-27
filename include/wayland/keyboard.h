@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 #include <sys/mman.h>
 #include <wayland-client-core.h>
 #include <xkbcommon/xkbcommon.h>
@@ -48,6 +49,13 @@ static void wl_keyboard_enter(void *data, struct wl_keyboard *wl_keyboard, uint3
 static void wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard, uint32_t serial, uint32_t time, uint32_t key, uint32_t key_state){
     struct client_state *cs = data;
     uint32_t keycode = key + 8;
+
+    // Reset orbit camera to default on any key down
+    if (key_state == WL_KEYBOARD_KEY_STATE_PRESSED) {
+        cs->cam_yaw_target   = atan2f(2.0f, 4.0f);
+        cs->cam_pitch_target = 0.0f;
+        cs->pointer_valid    = false;
+    }
     xkb_keysym_t sym = xkb_state_key_get_one_sym(cs->xkb_state, keycode);
 
     if (key_state != WL_KEYBOARD_KEY_STATE_PRESSED) return;
