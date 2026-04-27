@@ -26,10 +26,24 @@ static void wl_surface_frame_done (void *data, struct wl_callback *cb, uint32_t 
     cb = wl_surface_frame(state->wl_surface);
     wl_callback_add_listener(cb, &wl_surface_frame_listener, state); // This is why we defined our struct earlier and then redefine later
 
-    // Idk if this is needed anymore
-    if (state->last_frame != 0){
-        int elapsed = time - state->last_frame;
-        state->offset += elapsed / 1000.0 * 24;
+    float dt = (state->last_frame != 0) ? (time - state->last_frame) / 1000.0f : 0.016f;
+    state->last_dt = dt;
+    state->offset += dt * 24;
+
+    // Decay flash overlay
+    if (state->flash_timer > 0.0f) {
+        state->flash_timer -= dt;
+        if (state->flash_timer < 0.0f) state->flash_timer = 0.0f;
+    }
+
+    // Countdown to unlock
+    if (state->counting_down) {
+        state->countdown_timer -= dt;
+        if (state->countdown_timer <= 0.0f) {
+            state->countdown_timer = 0.0f;
+            state->counting_down = false;
+            state->auth_result = 1;
+        }
     }
 
     // Call to the render library based on the current state

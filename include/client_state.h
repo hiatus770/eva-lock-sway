@@ -33,21 +33,42 @@ struct client_state
     // Locking
     struct ext_session_lock_manager_v1 *ext_session_lock_manager_v1;
     struct ext_session_lock_v1 *ext_session_lock_v1;
+    struct ext_session_lock_surface_v1 *ext_lock_surface;
+    struct wl_output *wl_output;
+    bool session_locked; // true after .locked event from compositor
 
     // For pointer
     struct pointer_event pointer_event;
-    struct xkb_state *xkb_state; 
-    struct xkb_context *xkb_context; 
-    struct xkb_keymap *xkb_keymap; 
+    struct xkb_state *xkb_state;
+    struct xkb_context *xkb_context;
+    struct xkb_keymap *xkb_keymap;
 
     int width, height;
     int locked; // 1 == LOCKED, 0 == UNLOCKED / NOT LOCKED
     bool closed;
     clock_state state;
+    app_mode mode;
+
+    // Password input (lock mode)
+    char  password[256];
+    int   password_len;
+    int   indicator_step;    // 0-3 cycles through STOP/SLOW/NORMAL/RACING on keypress
+    bool  indicator_visible; // toggles on each keypress for visual feedback
+
+    // Countdown after successful auth
+    bool  counting_down;
+    float countdown_timer;
+
+    // Auth feedback
+    float flash_timer;    // counts down from 1.0 to 0.0
+    float flash_r, flash_g, flash_b;
+    int   auth_result;    // 0=none, 1=success, 2=fail
 
     // State
     float offset;
     uint32_t last_frame;
+    float last_dt;        // delta time in seconds, updated each frame
+    float intense_time;   // accumulated time for vignette oscillation
 
     // Egl things
     EGLContext egl_context;

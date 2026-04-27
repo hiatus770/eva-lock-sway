@@ -16,3 +16,9 @@ extern int SRC_HEIGHT, SRC_WIDTH;
 typedef enum clock_state {
     NORMAL, ALARM
 } clock_state;
+
+typedef enum app_mode {
+    MODE_CLOCK   = 0,
+    MODE_LOCK    = 1 << 0,
+    MODE_INTENSE = 1 << 1,
+} app_mode;

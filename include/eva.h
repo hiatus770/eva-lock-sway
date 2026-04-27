@@ -5,7 +5,8 @@
 
 float* generate_gradient(int color_count, float (*arr)[3], int* length);
 
-void render_clock(font* timer_font, struct camera global_camera); 
+// countdown_secs >= 0: display that value as M:SS; < 0: display real time
+void render_clock(font* timer_font, struct camera global_camera, float countdown_secs);
 
 void draw_line(struct entity* quad, float line_x, float line_y, float width, float height); 
 
