@@ -108,8 +108,27 @@ static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer) {
   }
 
   if (event->event_mask & POINTER_EVENT_MOTION) {
-    fprintf(stderr, "motion %f %f", wl_fixed_to_double(event->surface_x),
-            wl_fixed_to_double(event->surface_y));
+    double x = wl_fixed_to_double(event->surface_x);
+    double y = wl_fixed_to_double(event->surface_y);
+    if (client_state->pointer_valid) {
+        float dx = (float)(x - client_state->last_pointer_x);
+        float dy = (float)(y - client_state->last_pointer_y);
+        #define CAM_YAW_DEFAULT 0.4636f  // atan2(2,4) — matches default camera position
+        #define CAM_MAX_YAW_OFFSET 0.4f
+        #define CAM_MAX_PITCH 0.45f
+        client_state->cam_yaw_target   += dx * 0.003f;
+        client_state->cam_pitch_target -= dy * 0.003f;
+        // Clamp targets
+        float yaw_min = CAM_YAW_DEFAULT - CAM_MAX_YAW_OFFSET;
+        float yaw_max = CAM_YAW_DEFAULT + CAM_MAX_YAW_OFFSET;
+        if (client_state->cam_yaw_target < yaw_min) client_state->cam_yaw_target = yaw_min;
+        if (client_state->cam_yaw_target > yaw_max) client_state->cam_yaw_target = yaw_max;
+        if (client_state->cam_pitch_target >  CAM_MAX_PITCH) client_state->cam_pitch_target =  CAM_MAX_PITCH;
+        if (client_state->cam_pitch_target < -CAM_MAX_PITCH) client_state->cam_pitch_target = -CAM_MAX_PITCH;
+    }
+    client_state->last_pointer_x = x;
+    client_state->last_pointer_y = y;
+    client_state->pointer_valid  = true;
   }
 
   if (event->event_mask & POINTER_EVENT_BUTTON) {

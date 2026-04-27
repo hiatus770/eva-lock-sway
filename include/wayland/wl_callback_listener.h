@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -18,22 +19,70 @@ static const struct wl_callback_listener wl_surface_frame_listener;
 
 // This is the important function that is called whenever we are suppose dto render something according to the compositor
 static void wl_surface_frame_done (void *data, struct wl_callback *cb, uint32_t time){
-    // Destroy this callback
     wl_callback_destroy(cb);
 
-    // Request another frame from the compositor
     struct client_state *state = data;
-    cb = wl_surface_frame(state->wl_surface);
-    wl_callback_add_listener(cb, &wl_surface_frame_listener, state); // This is why we defined our struct earlier and then redefine later
 
-    // Idk if this is needed anymore
-    if (state->last_frame != 0){
-        int elapsed = time - state->last_frame;
-        state->offset += elapsed / 1000.0 * 24;
+    // Register next frame callback on the appropriate surface
+    struct wl_surface *frame_surface = state->wl_surface;
+    if (state->mode & MODE_LOCK) {
+        for (int i = 0; i < state->num_outputs; i++) {
+            if (state->lock_outputs[i].configured) {
+                frame_surface = state->lock_outputs[i].wl_surface;
+                break;
+            }
+        }
+    }
+    cb = wl_surface_frame(frame_surface);
+    wl_callback_add_listener(cb, &wl_surface_frame_listener, state);
+
+    float dt = (state->last_frame != 0) ? (time - state->last_frame) / 1000.0f : 0.016f;
+    state->last_dt = dt;
+    state->offset += dt * 24;
+
+    // Decay flash overlay
+    if (state->flash_timer > 0.0f) {
+        state->flash_timer -= dt;
+        if (state->flash_timer < 0.0f) state->flash_timer = 0.0f;
     }
 
-    // Call to the render library based on the current state
-    render(state);
+    // Smooth orbit camera interpolation (exponential decay, framerate-independent)
+    float lerp = 1.0f - expf(-dt * 8.0f);
+    state->cam_yaw   += (state->cam_yaw_target   - state->cam_yaw)   * lerp;
+    state->cam_pitch += (state->cam_pitch_target  - state->cam_pitch) * lerp;
+
+    // Countdown to unlock
+    if (state->counting_down) {
+        state->countdown_timer -= dt;
+        if (state->countdown_timer <= 0.0f) {
+            state->countdown_timer = 0.0f;
+            state->counting_down = false;
+            state->auth_result = 1;
+        }
+    }
+
+    if (state->mode & MODE_LOCK) {
+        // Render to every configured output
+        for (int i = 0; i < state->num_outputs; i++) {
+            struct lock_output *lo = &state->lock_outputs[i];
+            if (!lo->configured) continue;
+
+            eglMakeCurrent(state->egl_display, lo->egl_surface, lo->egl_surface, state->egl_context);
+            state->egl_surface = lo->egl_surface;
+            state->width  = lo->width;
+            state->height = lo->height;
+
+            if (SRC_WIDTH != lo->width || SRC_HEIGHT != lo->height) {
+                SRC_WIDTH  = lo->width;
+                SRC_HEIGHT = lo->height;
+                recreate_framebuffers();
+            }
+
+            render(state);
+        }
+    } else {
+        render(state);
+    }
 
     state->last_frame = time;
 }

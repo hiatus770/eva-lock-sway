@@ -17,7 +17,8 @@ CFLAGS=	-lwayland-client \
 		-pthread \
 		-pg \
 		-I ./include \
-		-lm 
+		-lm \
+		-lpam
 
 # Finds all include files to be use din the project
 include_files=$(wildcard ./include/* ./include/*/* ./src/*)
