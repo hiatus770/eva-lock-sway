@@ -1,14 +1,29 @@
 #pragma once
 
 #include <stdbool.h>
-#include <xkbcommon/xkbcommon.h> 
-#include <assert.h> 
+#include <xkbcommon/xkbcommon.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <EGL/egl.h>
 #include "globals.h"
 #include "wayland/pointer_struct.h"
 #include "ext-session-lock-v1-protocol.h"
+
+#define MAX_OUTPUTS 8
+
+struct client_state; // forward declaration for lock_output back-pointer
+
+struct lock_output {
+    struct wl_output *wl_output;
+    struct wl_surface *wl_surface;
+    struct wl_egl_window *egl_window;
+    EGLSurface egl_surface;
+    struct ext_session_lock_surface_v1 *lock_surface;
+    int width, height;
+    bool configured;
+    struct client_state *state;
+};
 
 struct client_state
 {
@@ -33,9 +48,9 @@ struct client_state
     // Locking
     struct ext_session_lock_manager_v1 *ext_session_lock_manager_v1;
     struct ext_session_lock_v1 *ext_session_lock_v1;
-    struct ext_session_lock_surface_v1 *ext_lock_surface;
-    struct wl_output *wl_output;
     bool session_locked; // true after .locked event from compositor
+    struct lock_output lock_outputs[MAX_OUTPUTS];
+    int num_outputs;
 
     // For pointer
     struct pointer_event pointer_event;
@@ -75,4 +90,5 @@ struct client_state
     EGLSurface egl_surface;
     struct wl_egl_window *egl_window;
     EGLDisplay egl_display;
+    EGLConfig egl_config;
 };

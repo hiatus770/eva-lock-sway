@@ -54,6 +54,7 @@ unsigned int fbo;
 unsigned int pingpongFBO[2];
 unsigned int pingpongBuffer[2]; // This is the texture passed into each other1
 unsigned int colorBuffers[2];
+unsigned int rboDepth;
 unsigned int attachments[2] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1};
 
 font matisse_bloom;
@@ -491,7 +492,6 @@ void initgl(struct client_state *state){
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
     }
 
-    unsigned int rboDepth;
     glGenRenderbuffers(1, &rboDepth);
     glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SRC_WIDTH, SRC_HEIGHT);
@@ -524,6 +524,53 @@ void initgl(struct client_state *state){
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void recreate_framebuffers(void) {
+    // Delete old framebuffers and textures
+    glDeleteFramebuffers(1, &fbo);
+    glDeleteTextures(2, colorBuffers);
+    glDeleteRenderbuffers(1, &rboDepth);
+    glDeleteFramebuffers(2, pingpongFBO);
+    glDeleteTextures(2, pingpongBuffer);
+
+    // Recreate main FBO
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+    glGenTextures(2, colorBuffers);
+    for (unsigned int i = 0; i < 2; i++) {
+        glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SRC_WIDTH, SRC_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0);
+    }
+
+    glGenRenderbuffers(1, &rboDepth);
+    glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, SRC_WIDTH, SRC_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+
+    glDrawBuffers(2, attachments);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Recreate pingpong FBOs
+    glGenFramebuffers(2, pingpongFBO);
+    glGenTextures(2, pingpongBuffer);
+    for (unsigned int i = 0; i < 2; i++) {
+        glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+        glBindTexture(GL_TEXTURE_2D, pingpongBuffer[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, SRC_WIDTH, SRC_HEIGHT, 0, GL_RGBA, GL_FLOAT, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongBuffer[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void create_window_egl(struct client_state *state, int32_t width, int32_t height){
     EGLint attributes[] = {
         EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_SURFACE_TYPE, EGL_WINDOW_BIT, EGL_NONE
@@ -540,6 +587,7 @@ void create_window_egl(struct client_state *state, int32_t width, int32_t height
     assert(ret == EGL_TRUE);
 
     eglChooseConfig(state->egl_display, attributes, &config, 1, &num_config);
+    state->egl_config = config;
     state->egl_context = eglCreateContext(state->egl_display, config, EGL_NO_CONTEXT, NULL);
 
     state->egl_window = wl_egl_window_create(state->wl_surface, width, height);
