@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include "../include/ext-session-lock-v1-protocol.h"
-// #include <math.h>
+#include <math.h>
 
 // Wayland related imports 
 #include <wayland-client-core.h>
@@ -85,6 +85,12 @@ int main(int argc, char *argv[])
     signal(SIGINT,  handle_signal);
 
     struct client_state state = {0};
+    // Default orbit camera: matches hardcoded position {1.5,0,3} looking at {-0.5,0,-1}
+    // offset from target = {2,0,4}, radius = sqrt(20)
+    state.cam_yaw          = atan2f(2.0f, 4.0f);
+    state.cam_pitch        = 0.0f;
+    state.cam_yaw_target   = state.cam_yaw;
+    state.cam_pitch_target = 0.0f;
     state.state = NORMAL;
     state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
     state.locked = 0;

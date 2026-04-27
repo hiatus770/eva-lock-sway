@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -44,6 +45,11 @@ static void wl_surface_frame_done (void *data, struct wl_callback *cb, uint32_t 
         state->flash_timer -= dt;
         if (state->flash_timer < 0.0f) state->flash_timer = 0.0f;
     }
+
+    // Smooth orbit camera interpolation (exponential decay, framerate-independent)
+    float lerp = 1.0f - expf(-dt * 8.0f);
+    state->cam_yaw   += (state->cam_yaw_target   - state->cam_yaw)   * lerp;
+    state->cam_pitch += (state->cam_pitch_target  - state->cam_pitch) * lerp;
 
     // Countdown to unlock
     if (state->counting_down) {

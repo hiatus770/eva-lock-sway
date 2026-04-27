@@ -168,8 +168,19 @@ void render(struct client_state *state){
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    vec3 look_at_goal = {-0.5, -0.00, -1.0f};
-    vec3 camera_position = {1.5f, 0.0, 3.0f};
+    // Orbit camera: position rotates around the target based on yaw/pitch
+    vec3 orbit_target = {-0.5f, 0.0f, -1.0f};
+    float orbit_r = sqrtf(20.0f); // matches default distance from {1.5,0,3} to target
+    float cam_yaw   = state->cam_yaw;
+    float cam_pitch = state->cam_pitch;
+    vec3 camera_position = {
+        orbit_target[0] + orbit_r * cosf(cam_pitch) * sinf(cam_yaw),
+        orbit_target[1] + orbit_r * sinf(cam_pitch),
+        orbit_target[2] + orbit_r * cosf(cam_pitch) * cosf(cam_yaw)
+    };
+    vec3 look_at_goal;
+    glm_vec3_sub(orbit_target, camera_position, look_at_goal);
+    glm_normalize(look_at_goal);
     glm_vec3_copy(look_at_goal, global_camera.direction);
     glm_vec3_copy(camera_position, global_camera.position);
 
