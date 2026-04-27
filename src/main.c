@@ -7,6 +7,7 @@
 #include <sys/mman.h>
 #include <time.h>
 #include <unistd.h>
+#include <signal.h>
 #include "../include/ext-session-lock-v1-protocol.h"
 // #include <math.h>
 
@@ -43,6 +44,13 @@
 #include "../include/graphics/graphics.h"
 #include "../include/wayland/lock_manager.h"
 
+static volatile sig_atomic_t g_should_exit = 0;
+
+static void handle_signal(int sig) {
+    (void)sig;
+    g_should_exit = 1;
+}
+
 void wayland_init(struct client_state *state){
     state->width = 1920;
     state->height = 1080;
@@ -73,6 +81,9 @@ void wayland_init(struct client_state *state){
 
 int main(int argc, char *argv[])
 {
+    signal(SIGTERM, handle_signal);
+    signal(SIGINT,  handle_signal);
+
     struct client_state state = {0};
     state.state = NORMAL;
     state.xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
@@ -121,12 +132,39 @@ int main(int argc, char *argv[])
         wl_surface_commit(state.wl_surface);
     }
 
-    struct wl_callback *cb = wl_surface_frame(state.wl_surface);
+    struct wl_surface *frame_surface = state.wl_surface;
+    if (state.mode & MODE_LOCK) {
+        for (int i = 0; i < state.num_outputs; i++) {
+            if (state.lock_outputs[i].configured) {
+                frame_surface = state.lock_outputs[i].wl_surface;
+                break;
+            }
+        }
+    }
+    struct wl_callback *cb = wl_surface_frame(frame_surface);
     wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
+
+    // wl_surface_frame only fires after the next commit on that surface.
+    // The configure renders already happened, so we need one more commit to
+    // attach the frame callback. Render to all outputs once here.
+    if (state.mode & MODE_LOCK) {
+        for (int i = 0; i < state.num_outputs; i++) {
+            struct lock_output *lo = &state.lock_outputs[i];
+            if (!lo->configured) continue;
+            eglMakeCurrent(state.egl_display, lo->egl_surface, lo->egl_surface, state.egl_context);
+            state.egl_surface = lo->egl_surface;
+            state.width  = lo->width;
+            state.height = lo->height;
+            SRC_WIDTH  = lo->width;
+            SRC_HEIGHT = lo->height;
+            recreate_framebuffers();
+            render(&state);
+        }
+    }
 
     while (wl_display_dispatch(state.wl_display) != -1)
     {
-        if (state.closed) break;
+        if (state.closed || g_should_exit) break;
 
         // Successful auth: unlock and exit
         if (state.auth_result == 1 && state.session_locked) {
@@ -139,16 +177,31 @@ int main(int argc, char *argv[])
         state.auth_result = 0;
     }
 
-    eglDestroySurface(state.egl_display, state.egl_surface);
+    eglMakeCurrent(state.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroyContext(state.egl_display, state.egl_context);
-    wl_egl_window_destroy(state.egl_window);
 
     if (state.mode & MODE_LOCK) {
-        if (state.ext_lock_surface)
-            ext_session_lock_surface_v1_destroy(state.ext_lock_surface);
-        if (state.ext_session_lock_v1)
-            ext_session_lock_v1_destroy(state.ext_session_lock_v1);
+        // Destroy per-output resources
+        for (int i = 0; i < state.num_outputs; i++) {
+            struct lock_output *lo = &state.lock_outputs[i];
+            if (lo->lock_surface) ext_session_lock_surface_v1_destroy(lo->lock_surface);
+            if (lo->egl_surface)  eglDestroySurface(state.egl_display, lo->egl_surface);
+            if (lo->egl_window)   wl_egl_window_destroy(lo->egl_window);
+            if (lo->wl_surface)   wl_surface_destroy(lo->wl_surface);
+        }
+        // Destroy original EGL window/surface from create_window_egl (unused in lock mode)
+        wl_egl_window_destroy(state.egl_window);
+        // state.egl_surface aliases a lo->egl_surface already destroyed — skip it
+
+        if (state.ext_session_lock_v1) {
+            if (state.session_locked)
+                ext_session_lock_v1_unlock_and_destroy(state.ext_session_lock_v1);
+            else
+                ext_session_lock_v1_destroy(state.ext_session_lock_v1);
+        }
     } else {
+        eglDestroySurface(state.egl_display, state.egl_surface);
+        wl_egl_window_destroy(state.egl_window);
         if (state.xdg_toplevel) xdg_toplevel_destroy(state.xdg_toplevel);
         if (state.xdg_surface)  xdg_surface_destroy(state.xdg_surface);
     }

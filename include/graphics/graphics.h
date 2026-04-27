@@ -37,4 +37,6 @@ void initgl(struct client_state *state);
 
 void create_window_egl(struct client_state *state, int32_t width, int32_t height);
 
-void render_quad(); 
+void render_quad();
+
+void recreate_framebuffers(void);

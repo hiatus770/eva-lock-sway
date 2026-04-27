@@ -45,8 +45,12 @@ static void registry_handle_global(void *data, struct wl_registry *registry, uin
             registry, name, &ext_session_lock_manager_v1_interface, 1);
     }
 
-    if (strcmp(interface, wl_output_interface.name) == 0 && state->wl_output == NULL) {
-        state->wl_output = wl_registry_bind(registry, name, &wl_output_interface, 3);
+    if (strcmp(interface, wl_output_interface.name) == 0) {
+        if (state->num_outputs < MAX_OUTPUTS) {
+            state->lock_outputs[state->num_outputs].wl_output =
+                wl_registry_bind(registry, name, &wl_output_interface, 3);
+            state->num_outputs++;
+        }
     }
 }
 
