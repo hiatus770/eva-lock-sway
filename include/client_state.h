@@ -94,6 +94,10 @@ struct client_state
     double last_pointer_y;
     bool pointer_valid;
 
+    // Frame rate limiting
+    int timer_fd;
+    uint32_t target_frame_ms; // e.g. 33 for ~30fps, 16 for ~60fps
+
     // Egl things
     EGLContext egl_context;
     EGLSurface egl_surface;
