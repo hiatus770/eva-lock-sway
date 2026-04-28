@@ -18,7 +18,8 @@ typedef enum clock_state {
 } clock_state;
 
 typedef enum app_mode {
-    MODE_CLOCK   = 0,
-    MODE_LOCK    = 1 << 0,
-    MODE_INTENSE = 1 << 1,
+    MODE_CLOCK       = 0,
+    MODE_LOCK        = 1 << 0,
+    MODE_INTENSE     = 1 << 1,
+    MODE_STATIONARY  = 1 << 2,
 } app_mode;
