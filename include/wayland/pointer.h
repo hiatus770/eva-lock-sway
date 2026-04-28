@@ -110,7 +110,7 @@ static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer) {
   if (event->event_mask & POINTER_EVENT_MOTION) {
     double x = wl_fixed_to_double(event->surface_x);
     double y = wl_fixed_to_double(event->surface_y);
-    if (client_state->pointer_valid) {
+    if (client_state->pointer_valid && !(client_state->mode & MODE_STATIONARY)) {
         float dx = (float)(x - client_state->last_pointer_x);
         float dy = (float)(y - client_state->last_pointer_y);
         #define CAM_YAW_DEFAULT 0.4636f  // atan2(2,4) — matches default camera position

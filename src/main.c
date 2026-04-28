@@ -98,8 +98,9 @@ int main(int argc, char *argv[])
     // Parse CLI arguments
     state.mode = MODE_CLOCK;
     for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "--lock") == 0)    state.mode |= MODE_LOCK;
-        if (strcmp(argv[i], "--intense") == 0) state.mode |= MODE_INTENSE;
+        if (strcmp(argv[i], "--lock") == 0)        state.mode |= MODE_LOCK;
+        if (strcmp(argv[i], "--intense") == 0)    state.mode |= MODE_INTENSE;
+        if (strcmp(argv[i], "--stationary") == 0) state.mode |= MODE_STATIONARY;
     }
     if (state.mode & MODE_INTENSE) state.state = ALARM;
 
