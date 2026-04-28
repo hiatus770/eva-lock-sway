@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/timerfd.h>
+#include <poll.h>
 #include <time.h>
 #include <unistd.h>
 #include <signal.h>
@@ -169,8 +171,52 @@ int main(int argc, char *argv[])
         }
     }
 
-    while (wl_display_dispatch(state.wl_display) != -1)
-    {
+    // Set up frame rate limiting via timerfd (~30fps)
+    state.target_frame_ms = 33;
+    state.timer_fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
+
+    struct pollfd fds[2];
+    fds[0].fd = wl_display_get_fd(state.wl_display);
+    fds[0].events = POLLIN;
+    fds[1].fd = state.timer_fd;
+    fds[1].events = POLLIN;
+
+    while (!state.closed && !g_should_exit) {
+        // Flush pending requests before blocking
+        while (wl_display_prepare_read(state.wl_display) != 0)
+            wl_display_dispatch_pending(state.wl_display);
+        wl_display_flush(state.wl_display);
+
+        poll(fds, 2, -1);
+
+        // Dispatch Wayland events (keyboard, mouse, etc.)
+        if (fds[0].revents & POLLIN) {
+            wl_display_read_events(state.wl_display);
+            wl_display_dispatch_pending(state.wl_display);
+        } else {
+            wl_display_cancel_read(state.wl_display);
+        }
+
+        // Timer fired: request the next frame callback
+        if (fds[1].revents & POLLIN) {
+            uint64_t expirations;
+            read(state.timer_fd, &expirations, sizeof(expirations));
+
+            struct wl_surface *frame_surface = state.wl_surface;
+            if (state.mode & MODE_LOCK) {
+                for (int i = 0; i < state.num_outputs; i++) {
+                    if (state.lock_outputs[i].configured) {
+                        frame_surface = state.lock_outputs[i].wl_surface;
+                        break;
+                    }
+                }
+            }
+            struct wl_callback *cb = wl_surface_frame(frame_surface);
+            wl_callback_add_listener(cb, &wl_surface_frame_listener, &state);
+            wl_surface_commit(frame_surface);
+            wl_display_flush(state.wl_display);
+        }
+
         if (state.closed || g_should_exit) break;
 
         // Successful auth: unlock and exit
@@ -183,6 +229,7 @@ int main(int argc, char *argv[])
         }
         state.auth_result = 0;
     }
+    close(state.timer_fd);
 
     eglMakeCurrent(state.egl_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
     eglDestroyContext(state.egl_display, state.egl_context);

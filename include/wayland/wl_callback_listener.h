@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <sys/timerfd.h>
 #include <wayland-client-core.h>
 #include <wayland-client.h>
 #include <wayland-client-protocol.h>
@@ -22,19 +23,6 @@ static void wl_surface_frame_done (void *data, struct wl_callback *cb, uint32_t 
     wl_callback_destroy(cb);
 
     struct client_state *state = data;
-
-    // Register next frame callback on the appropriate surface
-    struct wl_surface *frame_surface = state->wl_surface;
-    if (state->mode & MODE_LOCK) {
-        for (int i = 0; i < state->num_outputs; i++) {
-            if (state->lock_outputs[i].configured) {
-                frame_surface = state->lock_outputs[i].wl_surface;
-                break;
-            }
-        }
-    }
-    cb = wl_surface_frame(frame_surface);
-    wl_callback_add_listener(cb, &wl_surface_frame_listener, state);
 
     float dt = (state->last_frame != 0) ? (time - state->last_frame) / 1000.0f : 0.016f;
     state->last_dt = dt;
@@ -85,6 +73,15 @@ static void wl_surface_frame_done (void *data, struct wl_callback *cb, uint32_t 
     }
 
     state->last_frame = time;
+
+    // Arm the timer for the next frame — main loop will request wl_surface_frame when it fires
+    struct itimerspec its = {
+        .it_value = {
+            .tv_sec  =  state->target_frame_ms / 1000,
+            .tv_nsec = (state->target_frame_ms % 1000) * 1000000L,
+        },
+    };
+    timerfd_settime(state->timer_fd, 0, &its, NULL);
 }
 
 static const struct wl_callback_listener wl_surface_frame_listener = {
